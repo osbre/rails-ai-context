@@ -18,7 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Convention detector enhancements** — Detects concerns, validators, policies, serializers, notifiers, Phlex, PWA, encrypted attributes, normalizations
 - **Markdown serializer sections** — All 14 new introspector sections rendered in generated context files
 - **Doctor enhancements** — 4 new checks: controllers, views, i18n, tests (11 total)
-- **Fingerprinter expansion** — Watches `app/controllers`, `app/views`, `lib/tasks` for change detection
+- **Fingerprinter expansion** — Watches `app/controllers`, `app/views`, `app/jobs`, `app/mailers`, `app/channels`, `app/javascript/controllers`, `config/initializers`, `lib/tasks`; glob now covers `.rb`, `.rake`, `.js`, `.ts`, `.erb`, `.haml`, `.slim`, `.yml`
+
+### Fixed
+
+- **YAML parsing** — `YAML.load_file` calls now pass `permitted_classes: [Symbol], aliases: true` for Psych 4 (Ruby 3.1+) compatibility
+- **Rake task parser** — Fixed `@last_desc` instance variable leaking between files; fixed namespace tracking with indent-based stack
+- **Vite detection** — Changed `File.exist?("vite.config")` to `Dir.glob("vite.config.*")` to match `.js`/`.ts`/`.mjs` extensions
+- **Health check regex** — Added word boundaries to avoid false positives on substrings (e.g. "groups" matching "up")
+- **Multi-attribute macros** — `normalizes :email, :name` now captures all attributes, not just the first
+- **Stimulus action regex** — Requires `method(args) {` pattern to avoid matching control flow keywords
+- **Controller respond_to** — Simplified format extraction to avoid nested `end` keyword issues
+- **GetRoutes nil guard** — Added `|| {}` fallback for `by_controller` to prevent crash on partial introspection data
+- **GetSchema nil guard** — Added `|| {}` fallback for `schema[:tables]` to prevent crash on partial schema data
+- **View layout discovery** — Added `File.file?` filter to exclude directories from layout listing
+- **Fingerprinter glob** — Changed from `**/*.rb` to multi-extension glob to detect changes in `.rake`, `.js`, `.ts`, `.erb` files
 
 ### Changed
 
@@ -26,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MCP tools expanded from 6 to 9
 - Static MCP resources expanded from 4 to 7
 - Doctor checks expanded from 7 to 11
+- Test suite expanded from 149 to 247 examples with exact value assertions
 
 ## [0.3.0] - 2026-03-18
 
