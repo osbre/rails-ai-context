@@ -86,16 +86,18 @@ module RailsAiContext
       end
 
       def extract_scopes(model)
-        model.defined_enums.keys # Enums create scopes too, but we track those separately
-        # Get actual named scopes
-        if model.respond_to?(:scope_names)
-          model.scope_names.map(&:to_s)
-        else
-          # Fallback: check for scope definitions via reflection
-          model.methods.grep(/^_scope_/).map { |m| m.to_s.sub("_scope_", "") }
-        end
+        source_path = model_source_path(model)
+        return [] unless source_path && File.exist?(source_path)
+
+        File.read(source_path).scan(/^\s*scope\s+:(\w+)/).flatten
       rescue
         []
+      end
+
+      def model_source_path(model)
+        root = app.root.to_s
+        underscored = model.name.underscore
+        File.join(root, "app", "models", "#{underscored}.rb")
       end
 
       def extract_enums(model)
