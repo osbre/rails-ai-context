@@ -3,8 +3,10 @@
 module RailsAiContext
   class Configuration
     PRESETS = {
-      standard: %i[schema models routes jobs gems conventions controllers tests],
-      full: %i[schema models routes jobs gems conventions stimulus controllers views turbo i18n config active_storage action_text auth api tests rake_tasks assets devops action_mailbox]
+      standard: %i[schema models routes jobs gems conventions controllers tests migrations],
+      full: %i[schema models routes jobs gems conventions stimulus controllers views turbo
+               i18n config active_storage action_text auth api tests rake_tasks assets
+               devops action_mailbox migrations seeds middleware engines multi_database]
     }.freeze
 
     # MCP server settings

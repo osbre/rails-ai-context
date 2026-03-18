@@ -51,7 +51,9 @@ RSpec.describe "MCP Tool Integration" do
         "rails://gems",
         "rails://controllers",
         "rails://config",
-        "rails://tests"
+        "rails://tests",
+        "rails://migrations",
+        "rails://engines"
       )
     end
   end

@@ -15,6 +15,7 @@ module RailsAiContext
       check_views
       check_i18n
       check_tests
+      check_migrations
       check_context_files
       check_mcp_buildable
       check_ripgrep
@@ -107,6 +108,16 @@ module RailsAiContext
         Check.new(name: "Tests", status: :pass, message: "#{framework} test directory found", fix: nil)
       else
         Check.new(name: "Tests", status: :warn, message: "No test directory found", fix: "Set up tests with `rails generate rspec:install` or use default Minitest")
+      end
+    end
+
+    def check_migrations
+      migrate_dir = File.join(app.root, "db/migrate")
+      if Dir.exist?(migrate_dir) && Dir.glob(File.join(migrate_dir, "*.rb")).any?
+        count = Dir.glob(File.join(migrate_dir, "*.rb")).size
+        Check.new(name: "Migrations", status: :pass, message: "#{count} migration files found", fix: nil)
+      else
+        Check.new(name: "Migrations", status: :warn, message: "No migrations found in db/migrate/", fix: "Run `rails generate migration` to create one")
       end
     end
 

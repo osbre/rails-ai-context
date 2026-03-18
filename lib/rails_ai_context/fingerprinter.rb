@@ -9,6 +9,7 @@ module RailsAiContext
     WATCHED_FILES = %w[
       db/schema.rb
       config/routes.rb
+      config/database.yml
       Gemfile.lock
     ].freeze
 
@@ -20,7 +21,9 @@ module RailsAiContext
       app/mailers
       app/channels
       app/javascript/controllers
+      app/middleware
       config/initializers
+      db/migrate
       lib/tasks
     ].freeze
 

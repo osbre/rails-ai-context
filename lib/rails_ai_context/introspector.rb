@@ -69,6 +69,11 @@ module RailsAiContext
       when :assets         then Introspectors::AssetPipelineIntrospector.new(app)
       when :devops         then Introspectors::DevOpsIntrospector.new(app)
       when :action_mailbox then Introspectors::ActionMailboxIntrospector.new(app)
+      when :migrations      then Introspectors::MigrationIntrospector.new(app)
+      when :seeds           then Introspectors::SeedsIntrospector.new(app)
+      when :middleware       then Introspectors::MiddlewareIntrospector.new(app)
+      when :engines         then Introspectors::EngineIntrospector.new(app)
+      when :multi_database  then Introspectors::MultiDatabaseIntrospector.new(app)
       else
         raise ConfigurationError, "Unknown introspector: #{name}"
       end

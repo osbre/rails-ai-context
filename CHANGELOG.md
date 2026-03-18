@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-03-18
+
+### Added
+
+- **Migrations introspector** — Discovers migration files, pending migrations, recent history, schema version, and migration statistics. Works without DB connection.
+- **Seeds introspector** — Analyzes db/seeds.rb structure, discovers seed files in db/seeds/, detects which models are seeded, and identifies patterns (Faker, environment conditionals, find_or_create_by).
+- **Middleware introspector** — Discovers custom Rack middleware in app/middleware/, detects patterns (auth, rate limiting, tenant isolation, logging), and categorizes the full middleware stack.
+- **Engine introspector** — Discovers mounted Rails engines from routes.rb with paths and descriptions for 23+ known engines (Sidekiq::Web, Flipper::UI, PgHero, ActiveAdmin, etc.).
+- **Multi-database introspector** — Discovers multiple databases, replicas, sharding config, and model-specific `connects_to` declarations. Works with database.yml parsing fallback.
+- **2 new MCP resources** — `rails://migrations`, `rails://engines`
+- **Migrations added to :standard preset** — AI tools now see migration context by default
+- **Doctor check** — New `check_migrations` diagnostic
+- **Fingerprinter** — Now watches `db/migrate/`, `app/middleware/`, and `config/database.yml`
+
+### Changed
+
+- Default `:standard` preset expanded from 8 to 9 introspectors (added `:migrations`)
+- Default `:full` preset expanded from 21 to 26 introspectors
+- Doctor checks expanded from 11 to 12
+- Static MCP resources expanded from 7 to 9
+
 ## [0.5.2] - 2026-03-18
 
 ### Fixed

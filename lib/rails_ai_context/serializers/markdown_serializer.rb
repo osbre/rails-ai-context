@@ -36,6 +36,11 @@ module RailsAiContext
         sections << rake_tasks_section if context[:rake_tasks]
         sections << devops_section if context[:devops]
         sections << action_mailbox_section if context[:action_mailbox]
+        sections << migrations_section if context[:migrations]
+        sections << seeds_section if context[:seeds]
+        sections << middleware_section if context[:middleware]
+        sections << engines_section if context[:engines]
+        sections << multi_database_section if context[:multi_database]
         sections << footer
         sections.compact.join("\n\n")
       end
@@ -384,6 +389,108 @@ module RailsAiContext
 
         lines = [ "## Action Mailbox" ]
         data[:mailboxes].each { |m| lines << "- `#{m[:name]}`" }
+        lines.join("\n")
+      end
+
+      def migrations_section
+        data = context[:migrations]
+        return if data[:error]
+
+        lines = [ "## Migrations" ]
+        lines << "- Total: #{data[:total]}"
+        lines << "- Schema version: #{data[:schema_version]}" if data[:schema_version]
+
+        if data[:pending]&.any?
+          lines << "### Pending Migrations (#{data[:pending].size})"
+          data[:pending].each { |m| lines << "- `#{m[:version]}` #{m[:name]}" }
+        end
+
+        if data[:recent]&.any?
+          lines << "### Recent Migrations"
+          data[:recent].each do |m|
+            actions = m[:actions]&.any? ? " (#{m[:actions].join(', ')})" : ""
+            lines << "- `#{m[:version]}` #{m[:name]}#{actions}"
+          end
+        end
+
+        lines.join("\n")
+      end
+
+      def seeds_section
+        data = context[:seeds]
+        return if data[:error]
+
+        lines = [ "## Database Seeds" ]
+        if data[:seeds_file]
+          lines << "- Seeds file: #{data[:seeds_file][:exists] ? 'exists' : 'missing'}"
+          lines << "- Uses Faker: yes" if data[:seeds_file][:uses_faker]
+          lines << "- Environment-conditional: yes" if data[:seeds_file][:environment_conditional]
+        end
+        lines << "- Models seeded: #{data[:models_seeded].join(', ')}" if data[:models_seeded]&.any?
+
+        if data[:seed_files]&.any?
+          lines << "### Seed Files"
+          data[:seed_files].each { |f| lines << "- `#{f[:file]}`" }
+        end
+
+        lines.join("\n")
+      end
+
+      def middleware_section
+        data = context[:middleware]
+        return if data[:error]
+
+        lines = [ "## Custom Middleware" ]
+        if data[:custom_middleware]&.any?
+          data[:custom_middleware].each do |m|
+            detail = "- `#{m[:class_name]}` (#{m[:file]})"
+            detail += " — #{m[:detected_patterns].join(', ')}" if m[:detected_patterns]&.any?
+            lines << detail
+          end
+        else
+          lines << "- No custom middleware in app/middleware/"
+        end
+
+        lines.join("\n")
+      end
+
+      def engines_section
+        data = context[:engines]
+        return if data[:error]
+
+        lines = [ "## Mounted Engines" ]
+        if data[:mounted_engines]&.any?
+          data[:mounted_engines].each do |e|
+            desc = e[:description] ? " — #{e[:description]}" : ""
+            lines << "- `#{e[:engine]}` at `#{e[:path]}`#{desc}"
+          end
+        else
+          lines << "- No mounted engines"
+        end
+
+        lines.join("\n")
+      end
+
+      def multi_database_section
+        data = context[:multi_database]
+        return if data[:error]
+        return unless data[:multi_db]
+
+        lines = [ "## Multi-Database" ]
+        if data[:databases]&.any?
+          data[:databases].each do |db|
+            replica = db[:replica] ? " (replica)" : ""
+            lines << "- `#{db[:name]}` — #{db[:adapter]}#{replica}"
+          end
+        end
+
+        if data[:model_connections]&.any?
+          lines << "### Model Connections"
+          data[:model_connections].each do |c|
+            lines << "- `#{c[:model]}` → #{c[:connects_to] || 'custom connection'}"
+          end
+        end
+
         lines.join("\n")
       end
 

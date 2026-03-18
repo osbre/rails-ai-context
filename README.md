@@ -126,6 +126,8 @@ In addition to tools, the gem registers MCP resources that AI clients can read d
 | `rails://controllers` | All controllers with actions and filters (JSON) |
 | `rails://config` | Application configuration (JSON) |
 | `rails://tests` | Test infrastructure details (JSON) |
+| `rails://migrations` | Migration history and statistics (JSON) |
+| `rails://engines` | Mounted engines with paths and descriptions (JSON) |
 | `rails://models/{name}` | Per-model details (resource template) |
 
 ---
@@ -169,7 +171,7 @@ In addition to tools, the gem registers MCP resources that AI clients can read d
 RailsAiContext.configure do |config|
   # Introspector presets:
   #   :standard — 8 core introspectors (default, fast)
-  #   :full     — all 21 introspectors (thorough)
+  #   :full     — all 26 introspectors (thorough)
   config.preset = :standard
 
   # Or cherry-pick on top of a preset:

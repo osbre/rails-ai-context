@@ -48,6 +48,18 @@ module RailsAiContext
         description: "Test framework, factories, fixtures, CI, and coverage configuration",
         mime_type: "application/json",
         key: :tests
+      },
+      "rails://migrations" => {
+        name: "Migrations",
+        description: "Migration history, pending migrations, and migration statistics",
+        mime_type: "application/json",
+        key: :migrations
+      },
+      "rails://engines" => {
+        name: "Mounted Engines",
+        description: "Mounted Rails engines and Rack apps with paths and descriptions",
+        mime_type: "application/json",
+        key: :engines
       }
     }.freeze
 
