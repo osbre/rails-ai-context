@@ -5,16 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-03-18
+
+### Fixed
+
+- **Documentation updates** — Updated CONTRIBUTING.md, CHANGELOG.md, and CLAUDE.md to reflect Zeitwerk autoloading, introspector presets, and `.mcp.json` auto-discovery changes
+
 ## [0.5.0] - 2026-03-18
 
 ### Added
 
 - **Introspector presets** — `:standard` (8 core introspectors, fast) and `:full` (all 21, thorough) via `config.preset = :standard`
 - **`.mcp.json` auto-discovery** — Install generator creates `.mcp.json` so Claude Code and Cursor auto-detect the MCP server with zero manual config
+- **Zeitwerk autoloading** — Replaced 47 `require_relative` calls with Zeitwerk for faster boot and conventional file loading
 - **Automated release workflow** — GitHub Actions publishes to RubyGems via trusted publishing when a version tag is pushed
 - **Version consistency check** — Release workflow verifies git tag matches `version.rb` before publishing
 - **Auto GitHub Release** — Release notes extracted from CHANGELOG.md automatically
 - **Dependabot** — Weekly automated dependency and GitHub Actions updates
+- **README demo GIF** — Animated terminal recording showing install, doctor, and context generation
+- **SECURITY.md** — Security policy with supported versions and reporting process
+- **CODE_OF_CONDUCT.md** — Contributor Covenant v2.1
+- **GitHub repo topics** — Added discoverability keywords (rails, mcp, ai, etc.)
+
+### Changed
+
+- Default introspectors reduced from 21 to 8 (`:standard` preset) for faster boot; use `config.preset = :full` for all 21
+- New files auto-loaded by Zeitwerk — no manual `require_relative` needed when adding introspectors or tools
 
 ## [0.4.0] - 2026-03-18
 

@@ -28,20 +28,19 @@ lib/rails_ai_context/
 
 ## Adding a New Introspector
 
-1. Create `lib/rails_ai_context/introspectors/your_introspector.rb`
+1. Create `lib/rails_ai_context/introspectors/your_introspector.rb` (auto-loaded by Zeitwerk)
 2. Implement `#initialize(app)` and `#call` → returns a Hash (never raises)
 3. Register it in `lib/rails_ai_context/introspector.rb` (the `INTROSPECTOR_MAP`)
-4. Add the key to `Configuration#introspectors` default list
+4. Add the key to the appropriate preset(s) in `Configuration::PRESETS` (`:standard` for core, `:full` for all)
 5. Write specs in `spec/lib/rails_ai_context/your_introspector_spec.rb`
 
 ## Adding a New MCP Tool
 
-1. Create `lib/rails_ai_context/tools/your_tool.rb` inheriting from `BaseTool`
+1. Create `lib/rails_ai_context/tools/your_tool.rb` inheriting from `BaseTool` (auto-loaded by Zeitwerk)
 2. Define `tool_name`, `description`, `input_schema`, and `annotations`
 3. Implement `def self.call(...)` returning `text_response(string)`
 4. Register in `Server::TOOLS`
-5. Add `require_relative` in `lib/rails_ai_context.rb`
-6. Write specs in `spec/lib/rails_ai_context/tools/your_tool_spec.rb`
+5. Write specs in `spec/lib/rails_ai_context/tools/your_tool_spec.rb`
 
 ## Code Style
 
