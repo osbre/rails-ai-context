@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-ASSISTANT_TABLE = <<~TABLE
+ASSISTANT_TABLE = <<~TABLE unless defined?(ASSISTANT_TABLE)
   AI Assistant       Context File                          Command
   --                 --                                    --
   Claude Code        CLAUDE.md + .claude/rules/            rails ai:context:claude
@@ -14,7 +14,7 @@ TABLE
 def print_result(result)
   result[:written].each { |f| puts "  ✅ #{f}" }
   result[:skipped].each { |f| puts "  ⏭️  #{f} (unchanged)" }
-end
+end unless defined?(print_results)
 
 def apply_context_mode_override
   if ENV["CONTEXT_MODE"]
@@ -22,7 +22,7 @@ def apply_context_mode_override
     RailsAiContext.configuration.context_mode = mode
     puts "📐 Context mode: #{mode}"
   end
-end
+end unless defined?(apply_context_mode_override)
 
 namespace :ai do
   desc "Generate AI context files (CLAUDE.md, .cursor/rules/, .windsurfrules, .github/copilot-instructions.md)"
