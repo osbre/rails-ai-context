@@ -8,6 +8,7 @@ module RailsAiContext
   class Fingerprinter
     WATCHED_FILES = %w[
       db/schema.rb
+      db/structure.sql
       config/routes.rb
       config/database.yml
       Gemfile.lock

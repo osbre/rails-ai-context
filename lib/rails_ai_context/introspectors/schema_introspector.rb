@@ -109,12 +109,24 @@ module RailsAiContext
         File.join(app.root, "db", "schema.rb")
       end
 
-      # Fallback: parse db/schema.rb as text when DB isn't connected
+      def structure_file_path
+        File.join(app.root, "db", "structure.sql")
+      end
+
+      # Fallback: parse schema file as text when DB isn't connected.
+      # Tries db/schema.rb first, then db/structure.sql.
       # This enables introspection in CI, Claude Code, etc.
       def static_schema_parse
-        path = schema_file_path
-        return { error: "No schema.rb found at #{path}" } unless File.exist?(path)
+        if File.exist?(schema_file_path)
+          parse_schema_rb(schema_file_path)
+        elsif File.exist?(structure_file_path)
+          parse_structure_sql(structure_file_path)
+        else
+          { error: "No db/schema.rb or db/structure.sql found" }
+        end
+      end
 
+      def parse_schema_rb(path)
         content = File.read(path)
         tables = {}
         current_table = nil
@@ -137,6 +149,81 @@ module RailsAiContext
           total_tables: tables.size,
           note: "Parsed from db/schema.rb (no DB connection)"
         }
+      end
+
+      def parse_structure_sql(path) # rubocop:disable Metrics/MethodLength
+        content = File.read(path)
+        tables = {}
+
+        # Match CREATE TABLE blocks
+        content.scan(/CREATE TABLE (?:public\.)?(\w+)\s*\((.*?)\);/m) do |table_name, body|
+          next if table_name.start_with?("ar_internal_metadata", "schema_migrations")
+
+          columns = parse_sql_columns(body)
+          tables[table_name] = { columns: columns, indexes: [], foreign_keys: [] }
+        end
+
+        # Match CREATE INDEX / CREATE UNIQUE INDEX
+        content.scan(/CREATE (?:UNIQUE )?INDEX (\w+) ON (?:public\.)?(\w+).*?\((.+?)\)/m) do |idx_name, table, cols|
+          col_list = cols.scan(/\w+/).first
+          tables[table]&.dig(:indexes)&.push({ name: idx_name, columns: col_list })
+        end
+
+        # Match ALTER TABLE ... ADD CONSTRAINT ... FOREIGN KEY (handles multi-line)
+        content.scan(/ALTER TABLE\s+(?:ONLY\s+)?(?:public\.)?(\w+)\s+ADD CONSTRAINT.*?FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s+(?:public\.)?(\w+)\((\w+)\)/m) do |from, col, to, pk|
+          tables[from]&.dig(:foreign_keys)&.push({ from_table: from, to_table: to, column: col, primary_key: pk })
+        end
+
+        {
+          adapter: "static_parse",
+          tables: tables,
+          total_tables: tables.size,
+          note: "Parsed from db/structure.sql (no DB connection)"
+        }
+      end
+
+      # Parse column definitions from a CREATE TABLE body
+      def parse_sql_columns(body)
+        columns = []
+        body.each_line do |line|
+          line = line.strip.chomp(",").strip
+          next if line.empty?
+          next if line.match?(/\A(PRIMARY|CONSTRAINT|CHECK|UNIQUE|EXCLUDE|FOREIGN)\b/i)
+
+          # Match: column_name type_with_params [constraints]
+          if (match = line.match(/\A"?(\w+)"?\s+(.+)/))
+            col_name = match[1]
+            rest = match[2]
+            # Extract type: everything before NOT NULL, NULL, DEFAULT, etc.
+            col_type = rest.split(/\s+(?:NOT\s+NULL|NULL|DEFAULT|PRIMARY|UNIQUE|CONSTRAINT|CHECK)\b/i).first&.strip&.downcase
+            next unless col_type && !col_type.empty?
+            columns << { name: col_name, type: normalize_sql_type(col_type) }
+          end
+        end
+        columns
+      end
+
+      def normalize_sql_type(type)
+        case type
+        when /\Ainteger\z/i, /\Aint\z/i, /\Aint4\z/i then "integer"
+        when /\Abigint\z/i, /\Aint8\z/i then "bigint"
+        when /\Asmallint\z/i, /\Aint2\z/i then "smallint"
+        when /\Acharacter varying\z/i, /\Avarchar\z/i then "string"
+        when /\Atext\z/i then "text"
+        when /\Aboolean\z/i, /\Abool\z/i then "boolean"
+        when /\Atimestamp/i then "datetime"
+        when /\Adate\z/i then "date"
+        when /\Atime\z/i then "time"
+        when /\Anumeric\z/i, /\Adecimal\z/i then "decimal"
+        when /\Afloat/i, /\Adouble/i then "float"
+        when /\Ajsonb?\z/i then "json"
+        when /\Auuid\z/i then "uuid"
+        when /\Ainet\z/i then "inet"
+        when /\Acitext\z/i then "citext"
+        when /\Aarray\z/i then "array"
+        when /\Ahstore\z/i then "hstore"
+        else type
+        end
       end
     end
   end

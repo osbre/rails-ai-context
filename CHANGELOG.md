@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] - 2026-03-19
+
+### Added
+
+- **`structure.sql` support** — the schema introspector now parses `db/structure.sql` when no `db/schema.rb` exists and no database connection is available. Extracts tables, columns (with SQL type normalization), indexes, and foreign keys from PostgreSQL dump format. Prefers `schema.rb` when both exist.
+- **Fingerprinter watches `db/structure.sql`** — file changes to `structure.sql` now trigger cache invalidation and live reload.
+
 ## [0.8.3] - 2026-03-19
 
 ### Changed
