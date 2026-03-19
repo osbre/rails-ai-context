@@ -176,7 +176,7 @@ We ran the same feature task — *"Add status and date range filters to the Cook
 
 All 4 produced the same working feature. The only difference was token consumption.
 
-https://github.com/crisnahine/rails-ai-context/raw/main/docs/mcp-benchmark.mp4
+https://github.com/user-attachments/assets/171f52ae-bd30-43f6-a44f-bcfdda7fc139
 
 MCP tools give the AI structured, filtered access to your codebase instead of reading entire files. On this small 5-model app, that saved 35%. On larger projects, the savings compound significantly.
 
