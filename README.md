@@ -69,22 +69,48 @@ This creates:
 
 Each file is tailored to the AI assistant's preferred format. **Commit these files.** Your entire team gets smarter AI assistance.
 
-### 3. MCP Server (Auto-discovered)
+### 3. MCP Server
 
-The install generator creates a `.mcp.json` file that Claude Code and Cursor auto-detect — **no manual config needed**. Just open your project.
+The gem provides a live MCP server that AI clients can query on-demand for always-up-to-date introspection. Two transports are available:
 
-To start manually:
+#### Auto-discovery (recommended)
 
-```bash
-rails ai:serve
-```
-
-Or configure manually in `~/.claude/claude_desktop_config.json`:
+The install generator creates a `.mcp.json` file in your project root:
 
 ```json
 {
   "mcpServers": {
-    "my-rails-app": {
+    "rails-ai-context": {
+      "command": "bundle",
+      "args": ["exec", "rails", "ai:serve"]
+    }
+  }
+}
+```
+
+**Claude Code** and **Cursor** auto-detect this file — no manual config needed. Just open your project and the MCP tools are available.
+
+#### Manual setup per AI client
+
+<details>
+<summary><strong>Claude Code</strong></summary>
+
+Already handled by `.mcp.json` auto-discovery. Or add manually:
+
+```bash
+claude mcp add rails-ai-context -- bundle exec rails ai:serve
+```
+</details>
+
+<details>
+<summary><strong>Claude Desktop</strong></summary>
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "rails-ai-context": {
       "command": "bundle",
       "args": ["exec", "rails", "ai:serve"],
       "cwd": "/path/to/your/rails/app"
@@ -92,6 +118,49 @@ Or configure manually in `~/.claude/claude_desktop_config.json`:
   }
 }
 ```
+</details>
+
+<details>
+<summary><strong>Cursor</strong></summary>
+
+Already handled by `.mcp.json` auto-discovery. Or add manually in Cursor Settings > MCP:
+
+```json
+{
+  "mcpServers": {
+    "rails-ai-context": {
+      "command": "bundle",
+      "args": ["exec", "rails", "ai:serve"],
+      "cwd": "/path/to/your/rails/app"
+    }
+  }
+}
+```
+</details>
+
+#### HTTP transport (for remote clients)
+
+For browser-based tools or remote AI clients, use the HTTP transport:
+
+```bash
+rails ai:serve_http
+```
+
+This starts a standalone HTTP server at `http://127.0.0.1:6029/mcp` using the Streamable HTTP transport.
+
+Or auto-mount it inside your Rails app (no separate process needed):
+
+```ruby
+# config/initializers/rails_ai_context.rb
+RailsAiContext.configure do |config|
+  config.auto_mount = true
+  config.http_path  = "/mcp"   # default
+end
+```
+
+This inserts Rack middleware that handles MCP requests at `/mcp` and passes everything else through to your Rails app.
+
+> **Note:** Both transports are **read-only** — they expose the same 9 introspection tools and never modify your application or database. The stdio transport (`ai:serve`) is recommended for local development; HTTP is for remote or programmatic access.
 
 ---
 
