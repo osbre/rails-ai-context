@@ -22,6 +22,7 @@ lib/rails_ai_context/
 ├── tools/             # 9 MCP tools with detail levels and pagination
 ├── serializers/       # Per-assistant formatters (claude, cursor, windsurf, copilot, JSON)
 ├── server.rb          # MCP server setup (stdio + HTTP)
+├── live_reload.rb     # MCP live reload (file watcher + cache invalidation)
 ├── engine.rb          # Rails Engine for auto-integration
 └── configuration.rb   # User-facing config (presets, context_mode, limits)
 ```

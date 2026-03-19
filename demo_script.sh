@@ -8,7 +8,7 @@ echo 'Fetching gem metadata from https://rubygems.org...'
 sleep 0.3
 echo 'Resolving dependencies...'
 sleep 0.3
-echo 'Installing rails-ai-context 0.7.1'
+echo 'Installing rails-ai-context 0.8.0'
 echo ''
 sleep 1
 
@@ -36,6 +36,8 @@ sleep 0.15
 echo '  ✅ MCP Server    Ready (stdio transport)'
 sleep 0.15
 echo '  ✅ Ripgrep       Installed (fast code search)'
+sleep 0.15
+echo '  ✅ Live reload   `listen` gem available'
 echo ''
 sleep 0.3
 printf '  \033[1;32mAI Readiness Score: 92/100\033[0m\n'
