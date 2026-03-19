@@ -21,6 +21,7 @@ module RailsAiContext
         skipped = []
 
         files = {
+          "rails-context.md" => render_context_overview,
           "rails-schema.md" => render_schema_reference,
           "rails-models.md" => render_models_reference,
           "rails-mcp-tools.md" => render_mcp_tools_reference
@@ -43,6 +44,44 @@ module RailsAiContext
 
       private
 
+      def render_context_overview
+        lines = [
+          "# #{context[:app_name] || 'Rails App'} — Overview",
+          "",
+          "Rails #{context[:rails_version]} | Ruby #{context[:ruby_version]}",
+          ""
+        ]
+
+        schema = context[:schema]
+        if schema.is_a?(Hash) && !schema[:error]
+          lines << "- Database: #{schema[:adapter]} — #{schema[:total_tables]} tables"
+        end
+
+        models = context[:models]
+        lines << "- Models: #{models.size}" if models.is_a?(Hash) && !models[:error]
+
+        routes = context[:routes]
+        lines << "- Routes: #{routes[:total_routes]}" if routes.is_a?(Hash) && !routes[:error]
+
+        gems = context[:gems]
+        if gems.is_a?(Hash) && !gems[:error]
+          notable = gems[:notable_gems] || []
+          notable.group_by { |g| g[:category]&.to_s || "other" }.first(6).each do |cat, gem_list|
+            lines << "- #{cat}: #{gem_list.map { |g| g[:name] }.join(', ')}"
+          end
+        end
+
+        conv = context[:conventions]
+        if conv.is_a?(Hash) && !conv[:error]
+          (conv[:architecture] || []).first(5).each { |p| lines << "- #{p}" }
+        end
+
+        lines << ""
+        lines << "Use MCP tools for detailed data. Start with `detail:\"summary\"`."
+
+        lines.join("\n")
+      end
+
       def render_schema_reference
         schema = context[:schema]
         return nil unless schema.is_a?(Hash) && !schema[:error]
@@ -52,7 +91,7 @@ module RailsAiContext
         lines = [
           "# Database Tables (#{tables.size})",
           "",
-          "For full column details, use the `rails_get_schema` MCP tool.",
+          "DO NOT read db/schema.rb directly. Use the `rails_get_schema` MCP tool instead.",
           "Call with `detail:\"summary\"` first, then `table:\"name\"` for specifics.",
           ""
         ]
@@ -75,8 +114,8 @@ module RailsAiContext
         lines = [
           "# ActiveRecord Models (#{models.size})",
           "",
-          "For full details, use `rails_get_model_details` MCP tool.",
-          "Call with no args to list all, then `model:\"Name\"` for specifics.",
+          "DO NOT read model files to check associations/validations. Use `rails_get_model_details` MCP tool instead.",
+          "Call with `detail:\"summary\"` first, then `model:\"Name\"` for specifics.",
           ""
         ]
 
@@ -94,50 +133,45 @@ module RailsAiContext
         lines.join("\n")
       end
 
-      def render_mcp_tools_reference # rubocop:disable Metrics/MethodLength
+      def render_mcp_tools_reference # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
         lines = [
-          "# MCP Tool Reference",
+          "# Rails MCP Tools — ALWAYS Use These First",
           "",
-          "All introspection tools support a `detail` parameter:",
-          "- `summary` — names + counts (default limit: 50)",
-          "- `standard` — names + key details (default limit: 15, this is the default)",
-          "- `full` — everything including indexes, FKs (default limit: 5)",
+          "IMPORTANT: This project has live MCP tools that return parsed, up-to-date data.",
+          "ALWAYS use these tools BEFORE reading files like db/schema.rb, config/routes.rb, or model source files.",
+          "The tools return structured, token-efficient summaries. Reading raw files wastes tokens and may be stale.",
           "",
-          "## rails_get_schema",
-          "Params: `table`, `detail`, `limit`, `offset`, `format`",
+          "## Required Workflow",
+          "1. ALWAYS start with `detail:\"summary\"` to get the full landscape",
+          "2. Then drill into specifics with filters (`table:`, `model:`, `controller:`)",
+          "3. NEVER use `detail:\"full\"` unless you specifically need indexes, FKs, or constraints",
+          "4. DO NOT read db/schema.rb — use `rails_get_schema` instead",
+          "5. DO NOT read model files to understand associations — use `rails_get_model_details` instead",
+          "6. DO NOT read config/routes.rb — use `rails_get_routes` instead",
+          "",
+          "## Tools",
+          "",
+          "**rails_get_schema** — database tables, columns, indexes, foreign keys",
           "- `rails_get_schema(detail:\"summary\")` — all tables with column counts",
           "- `rails_get_schema(table:\"users\")` — full detail for one table",
-          "- `rails_get_schema(detail:\"summary\", limit:20, offset:40)` — paginate",
           "",
-          "## rails_get_model_details",
-          "Params: `model`, `detail`",
+          "**rails_get_model_details** — associations, validations, scopes, enums, callbacks",
           "- `rails_get_model_details(detail:\"summary\")` — list all model names",
-          "- `rails_get_model_details(model:\"User\")` — associations, validations, scopes, enums, callbacks",
-          "- `rails_get_model_details(detail:\"full\")` — all models with full association lists",
+          "- `rails_get_model_details(model:\"User\")` — full detail for one model",
           "",
-          "## rails_get_routes",
-          "Params: `controller`, `detail`, `limit`, `offset`",
+          "**rails_get_routes** — HTTP verbs, paths, controller actions",
           "- `rails_get_routes(detail:\"summary\")` — route counts per controller",
           "- `rails_get_routes(controller:\"users\")` — routes for one controller",
-          "- `rails_get_routes(detail:\"full\", limit:50)` — full table with route names",
           "",
-          "## rails_get_controllers",
-          "Params: `controller`, `detail`",
+          "**rails_get_controllers** — actions, filters, strong params, concerns",
           "- `rails_get_controllers(detail:\"summary\")` — names + action counts",
-          "- `rails_get_controllers(controller:\"UsersController\")` — actions, filters, strong params",
+          "- `rails_get_controllers(controller:\"UsersController\")` — full detail",
           "",
-          "## Other tools (no detail param)",
-          "- `rails_get_config` — cache store, session, timezone, middleware, initializers",
-          "- `rails_get_test_info` — test framework, factories/fixtures, CI config, coverage",
-          "- `rails_get_gems` — notable gems categorized by function",
-          "- `rails_get_conventions` — architecture patterns, directory structure",
-          "- `rails_search_code(pattern:\"regex\", file_type:\"rb\", max_results:20)` — codebase search",
-          "",
-          "## Workflow",
-          "1. Start with `detail:\"summary\"` to understand the landscape",
-          "2. Drill into specifics with filters (`table:`, `model:`, `controller:`)",
-          "3. Use `detail:\"full\"` only when you need indexes, FKs, constraints",
-          "4. Paginate large results with `limit` and `offset`"
+          "**rails_get_config** — cache store, session, timezone, middleware, initializers",
+          "**rails_get_test_info** — test framework, factories/fixtures, CI config",
+          "**rails_get_gems** — notable gems categorized by function",
+          "**rails_get_conventions** — architecture patterns, directory structure",
+          "**rails_search_code** — regex search: `rails_search_code(pattern:\"regex\", file_type:\"rb\")`"
         ]
 
         lines.join("\n")

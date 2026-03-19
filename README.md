@@ -55,10 +55,10 @@ your-rails-app/
 │   └── .claude/rules/
 │       ├── rails-schema.md                               table listing
 │       ├── rails-models.md                               model listing
+│       ├── rails-context.md                               app overview
 │       └── rails-mcp-tools.md                            full tool reference
 │
 ├── 🟢 Cursor
-│   ├── .cursorrules                                      legacy compat
 │   └── .cursor/rules/
 │       ├── rails-project.mdc                             alwaysApply: true
 │       ├── rails-models.mdc                              globs: app/models/**
@@ -256,6 +256,10 @@ RailsAiContext.configure do |config|
   # Live reload: auto-invalidate MCP caches on file changes
   # :auto (default), true, or false
   # config.live_reload = :auto
+
+  # Skip root files (CLAUDE.md, .windsurfrules, etc.) — only generate split rules
+  # Lets you manage root files yourself while still getting .claude/rules/, .cursor/rules/, etc.
+  # config.generate_root_files = false
 end
 ```
 
@@ -277,6 +281,7 @@ end
 | `cache_ttl` | `30` | Cache TTL in seconds |
 | `live_reload` | `:auto` | `:auto`, `true`, or `false` — MCP live reload |
 | `live_reload_debounce` | `1.5` | Debounce interval in seconds |
+| `generate_root_files` | `true` | Generate root files (CLAUDE.md, etc.) — set `false` for split rules only |
 </details>
 
 ---
@@ -372,7 +377,7 @@ The gem parses `db/schema.rb` as text when no database is connected. Works in CI
 ```bash
 git clone https://github.com/crisnahine/rails-ai-context.git
 cd rails-ai-context && bundle install
-bundle exec rspec       # 403 examples
+bundle exec rspec       # 408 examples
 bundle exec rubocop     # Lint
 ```
 

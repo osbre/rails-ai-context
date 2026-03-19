@@ -5,7 +5,7 @@ ASSISTANT_TABLE = <<~TABLE
   --                 --                                    --
   Claude Code        CLAUDE.md + .claude/rules/            rails ai:context:claude
   OpenCode           AGENTS.md                             rails ai:context:opencode
-  Cursor             .cursorrules + .cursor/rules/         rails ai:context:cursor
+  Cursor             .cursor/rules/                        rails ai:context:cursor
   Windsurf           .windsurfrules + .windsurf/rules/     rails ai:context:windsurf
   GitHub Copilot     .github/copilot-instructions.md       rails ai:context:copilot
   JSON (generic)     .ai-context.json                      rails ai:context:json
@@ -25,7 +25,7 @@ def apply_context_mode_override
 end
 
 namespace :ai do
-  desc "Generate AI context files (CLAUDE.md, .cursorrules, .windsurfrules, .github/copilot-instructions.md)"
+  desc "Generate AI context files (CLAUDE.md, .cursor/rules/, .windsurfrules, .github/copilot-instructions.md)"
   task context: :environment do
     require "rails_ai_context"
 
@@ -60,7 +60,7 @@ namespace :ai do
   end
 
   namespace :context do
-    { claude: "CLAUDE.md", opencode: "AGENTS.md", cursor: ".cursorrules", windsurf: ".windsurfrules",
+    { claude: "CLAUDE.md", opencode: "AGENTS.md", cursor: ".cursor/rules/", windsurf: ".windsurfrules",
       copilot: ".github/copilot-instructions.md", json: ".ai-context.json" }.each do |fmt, file|
       desc "Generate #{file} context file"
       task fmt => :environment do

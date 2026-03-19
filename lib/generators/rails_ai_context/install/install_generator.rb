@@ -10,16 +10,29 @@ module RailsAiContext
       desc "Install rails-ai-context: creates initializer, MCP config, and generates initial context files."
 
       def create_mcp_config
-        create_file ".mcp.json", JSON.pretty_generate({
-          mcpServers: {
-            "rails-ai-context" => {
-              command: "bundle",
-              args: [ "exec", "rails", "ai:serve" ]
-            }
-          }
-        }) + "\n"
+        mcp_path = Rails.root.join(".mcp.json")
+        server_entry = {
+          "command" => "bundle",
+          "args" => [ "exec", "rails", "ai:serve" ]
+        }
 
-        say "Created .mcp.json (auto-discovered by Claude Code, Cursor, etc.)", :green
+        if File.exist?(mcp_path)
+          existing = JSON.parse(File.read(mcp_path)) rescue {}
+          existing["mcpServers"] ||= {}
+
+          if existing["mcpServers"]["rails-ai-context"]
+            say ".mcp.json already has rails-ai-context — skipped", :yellow
+          else
+            existing["mcpServers"]["rails-ai-context"] = server_entry
+            File.write(mcp_path, JSON.pretty_generate(existing) + "\n")
+            say "Added rails-ai-context to existing .mcp.json", :green
+          end
+        else
+          create_file ".mcp.json", JSON.pretty_generate({
+            mcpServers: { "rails-ai-context" => server_entry }
+          }) + "\n"
+          say "Created .mcp.json (auto-discovered by Claude Code, Cursor, etc.)", :green
+        end
       end
 
       def create_initializer
@@ -41,7 +54,7 @@ module RailsAiContext
             # Paths to exclude from code search
             # config.excluded_paths += %w[vendor/bundle]
 
-            # Context mode for generated files (CLAUDE.md, .cursorrules, etc.)
+            # Context mode for generated files (CLAUDE.md, .cursor/rules/, etc.)
             # :compact — smart, ≤150 lines, references MCP tools for details (default)
             # :full    — dumps everything into context files (good for small apps <30 models)
             # config.context_mode = :compact
@@ -110,14 +123,14 @@ module RailsAiContext
         say "Quick start:", :yellow
         say "  rails ai:context         # Generate all context files"
         say "  rails ai:context:claude   # Generate CLAUDE.md only"
-        say "  rails ai:context:cursor   # Generate .cursorrules only"
+        say "  rails ai:context:cursor   # Generate .cursor/rules/ only"
         say "  rails ai:serve           # Start MCP server (stdio)"
         say "  rails ai:inspect         # Print introspection summary"
         say ""
         say "Generated files per AI tool:", :yellow
         say "  Claude Code    → CLAUDE.md + .claude/rules/*.md"
         say "  OpenCode       → AGENTS.md"
-        say "  Cursor         → .cursorrules + .cursor/rules/*.mdc"
+        say "  Cursor         → .cursor/rules/*.mdc"
         say "  Windsurf       → .windsurfrules + .windsurf/rules/*.md"
         say "  GitHub Copilot → .github/copilot-instructions.md + .github/instructions/*.instructions.md"
         say ""

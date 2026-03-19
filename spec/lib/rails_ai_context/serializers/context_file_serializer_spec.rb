@@ -11,8 +11,8 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         serializer = described_class.new(context, format: :all)
         result = serializer.call
-        # 6 main files + split rules (claude/rules, cursor/rules, windsurf/rules, github/instructions)
-        expect(result[:written].size).to be >= 6
+        # 5 root files + split rules (claude/rules, cursor/rules, windsurf/rules, opencode, github/instructions)
+        expect(result[:written].size).to be >= 5
         expect(result[:skipped]).to be_empty
       end
     end
@@ -22,7 +22,6 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         described_class.new(context, format: :claude).call
         result = described_class.new(context, format: :claude).call
-        # 1 main file + 2 claude/rules files = 3 total skipped
         expect(result[:skipped].size).to be >= 1
         expect(result[:written]).to be_empty
       end
@@ -33,7 +32,6 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         serializer = described_class.new(context, format: :claude)
         result = serializer.call
-        # 1 CLAUDE.md + 2 .claude/rules/ files = 3
         expect(result[:written].size).to be >= 1
         expect(result[:written].any? { |f| f.end_with?("CLAUDE.md") }).to be true
       end
@@ -49,13 +47,14 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
       end
     end
 
-    it "generates .cursor/rules/ when writing cursor format" do
+    it "generates only split rules for cursor format (no root .cursorrules)" do
       Dir.mktmpdir do |dir|
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         serializer = described_class.new(context, format: :cursor)
         result = serializer.call
         cursor_rules = result[:written].select { |f| f.include?(".cursor/rules/") }
         expect(cursor_rules).not_to be_empty
+        expect(result[:written].none? { |f| f.end_with?(".cursorrules") }).to be true
       end
     end
 
@@ -86,17 +85,6 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         result = serializer.call
         agents_file = result[:written].find { |f| f.end_with?("AGENTS.md") }
         expect(agents_file).not_to be_nil
-        expect(File.read(agents_file)).to include("AI Context")
-      end
-    end
-
-    it "dispatches cursor format to RulesSerializer" do
-      Dir.mktmpdir do |dir|
-        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
-        serializer = described_class.new(context, format: :cursor)
-        result = serializer.call
-        cursorrules_file = result[:written].find { |f| f.end_with?(".cursorrules") }
-        expect(File.read(cursorrules_file)).to include("Project Rules")
       end
     end
 
@@ -105,6 +93,87 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         serializer = described_class.new(context, format: :bogus)
         expect { serializer.call }.to raise_error(ArgumentError, /Unknown format/)
+      end
+    end
+  end
+
+  describe "section markers" do
+    it "wraps new file content in markers" do
+      Dir.mktmpdir do |dir|
+        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
+        described_class.new(context, format: :claude).call
+        content = File.read(File.join(dir, "CLAUDE.md"))
+        expect(content).to include("<!-- BEGIN rails-ai-context -->")
+        expect(content).to include("<!-- END rails-ai-context -->")
+      end
+    end
+
+    it "preserves user content outside markers on re-run" do
+      Dir.mktmpdir do |dir|
+        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
+        filepath = File.join(dir, "CLAUDE.md")
+
+        described_class.new(context, format: :claude).call
+
+        existing = File.read(filepath)
+        File.write(filepath, "# My Custom Notes\n\n#{existing}\n# Footer\n")
+
+        described_class.new(context, format: :claude).call
+        updated = File.read(filepath)
+        expect(updated).to include("My Custom Notes")
+        expect(updated).to include("Footer")
+        expect(updated).to include("<!-- BEGIN rails-ai-context -->")
+      end
+    end
+
+    it "appends marked section to file without markers" do
+      Dir.mktmpdir do |dir|
+        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
+        filepath = File.join(dir, "CLAUDE.md")
+        File.write(filepath, "# My hand-written CLAUDE.md\nSome rules here.\n")
+
+        described_class.new(context, format: :claude).call
+        content = File.read(filepath)
+        expect(content).to start_with("# My hand-written CLAUDE.md")
+        expect(content).to include("<!-- BEGIN rails-ai-context -->")
+        expect(content).to include("<!-- END rails-ai-context -->")
+      end
+    end
+
+    it "does not use markers for JSON format" do
+      Dir.mktmpdir do |dir|
+        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
+        described_class.new(context, format: :json).call
+        content = File.read(File.join(dir, ".ai-context.json"))
+        expect(content).not_to include("<!-- BEGIN")
+      end
+    end
+  end
+
+  describe "generate_root_files = false" do
+    it "skips root files but still generates split rules" do
+      Dir.mktmpdir do |dir|
+        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
+        allow(RailsAiContext.configuration).to receive(:generate_root_files).and_return(false)
+        result = described_class.new(context, format: :claude).call
+        expect(result[:written].none? { |f| f.end_with?("CLAUDE.md") }).to be true
+        split_rules = result[:written].select { |f| f.include?(".claude/rules/") }
+        expect(split_rules).not_to be_empty
+      end
+    end
+
+    it "skips all root files for :all format" do
+      Dir.mktmpdir do |dir|
+        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
+        allow(RailsAiContext.configuration).to receive(:generate_root_files).and_return(false)
+        result = described_class.new(context, format: :all).call
+        root_files = result[:written].select { |f|
+          base = File.basename(f)
+          %w[CLAUDE.md AGENTS.md .windsurfrules .ai-context.json].include?(base) ||
+            f.end_with?("copilot-instructions.md")
+        }
+        expect(root_files).to be_empty
+        expect(result[:written]).not_to be_empty
       end
     end
   end

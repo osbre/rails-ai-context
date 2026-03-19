@@ -148,7 +148,6 @@ end
 
 | File | Purpose | Notes |
 |------|---------|-------|
-| `.cursorrules` | Legacy context file | Compact mode. Backward compatibility with older Cursor versions. |
 | `.cursor/rules/rails-project.mdc` | Project overview | `alwaysApply: true` — loaded in every conversation. |
 | `.cursor/rules/rails-models.mdc` | Model reference | `globs: app/models/**/*.rb` — auto-attaches when editing models. |
 | `.cursor/rules/rails-controllers.mdc` | Controller reference | `globs: app/controllers/**/*.rb` — auto-attaches when editing controllers. |
@@ -193,7 +192,7 @@ Commit **all files except `.ai-context.json`** (which is gitignored). This gives
 | `rails ai:context:full` | full | all | Generate all files in full mode |
 | `rails ai:context:claude` | compact | Claude | CLAUDE.md + .claude/rules/ |
 | `rails ai:context:opencode` | compact | OpenCode | AGENTS.md + per-directory AGENTS.md |
-| `rails ai:context:cursor` | compact | Cursor | .cursorrules + .cursor/rules/ |
+| `rails ai:context:cursor` | compact | Cursor | .cursor/rules/ |
 | `rails ai:context:windsurf` | compact | Windsurf | .windsurfrules + .windsurf/rules/ |
 | `rails ai:context:copilot` | compact | Copilot | copilot-instructions.md + .github/instructions/ |
 | `rails ai:context:json` | — | JSON | .ai-context.json |
@@ -652,6 +651,23 @@ end
 | `live_reload` | Symbol/Boolean | `:auto` | `:auto`, `true`, or `false` — enable MCP live reload |
 | `live_reload_debounce` | Float | `1.5` | Debounce interval in seconds for live reload |
 | `server_name` | String | `"rails-ai-context"` | MCP server name |
+| `generate_root_files` | Boolean | `true` | Generate root files (CLAUDE.md, .windsurfrules, etc.) — set `false` for split rules only |
+
+### Root file generation
+
+By default, `rails ai:context` generates root files (CLAUDE.md, AGENTS.md, .windsurfrules, etc.) alongside split rules.
+
+**Section markers:** Generated content is wrapped in `<!-- BEGIN rails-ai-context -->` / `<!-- END rails-ai-context -->` markers. If you add custom notes above or below the markers, they will be preserved when you re-run `rails ai:context`.
+
+**Skip root files:** If you prefer to maintain root files yourself and only want split rules (`.claude/rules/`, `.cursor/rules/`, `.windsurf/rules/`, `.github/instructions/`):
+
+```ruby
+RailsAiContext.configure do |config|
+  config.generate_root_files = false
+end
+```
+
+All split rules include an app overview file, so no context is lost when root files are disabled.
 
 ---
 
@@ -733,7 +749,6 @@ config.introspectors = %i[schema models routes gems auth api]
 **Auto-discovery:** Opens `.mcp.json` automatically. No setup needed.
 
 **Context files loaded:**
-- `.cursorrules` — read at conversation start
 - `.cursor/rules/*.mdc` — loaded based on `alwaysApply` and `globs` settings
 
 **MDC rule activation modes:**

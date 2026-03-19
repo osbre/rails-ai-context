@@ -4,7 +4,7 @@ module RailsAiContext
   module Serializers
     # Generates .cursor/rules/*.mdc files in the new Cursor MDC format.
     # Each file is focused, <50 lines, with YAML frontmatter.
-    # Also generates legacy .cursorrules for backward compatibility.
+    # .cursorrules is deprecated by Cursor; this is the recommended format.
     class CursorRulesSerializer
       attr_reader :context
 
@@ -154,47 +154,28 @@ module RailsAiContext
         lines.join("\n")
       end
 
-      # Always-on MCP tool reference
+      # Always-on MCP tool reference — strongest enforcement point for Cursor
       def render_mcp_tools_rule # rubocop:disable Metrics/MethodLength
         lines = [
           "---",
-          "description: \"MCP tool reference with parameters and examples\"",
+          "description: \"Rails MCP tools — ALWAYS use these before reading Rails files directly\"",
           "alwaysApply: true",
           "---",
           "",
-          "# MCP Tool Reference",
+          "# Rails MCP Tools — Use These First",
           "",
-          "Detail levels: summary | standard (default) | full",
+          "ALWAYS use these MCP tools BEFORE reading db/schema.rb, config/routes.rb, or model files.",
+          "They return parsed, up-to-date data and save tokens. Start with detail:\"summary\".",
           "",
-          "## rails_get_schema",
-          "Params: table, detail, limit, offset, format",
-          "- `rails_get_schema(detail:\"summary\")` — all tables with column counts",
-          "- `rails_get_schema(table:\"users\")` — full detail for one table",
-          "- `rails_get_schema(detail:\"summary\", limit:20, offset:40)` — paginate",
-          "",
-          "## rails_get_model_details",
-          "Params: model, detail",
-          "- `rails_get_model_details(detail:\"summary\")` — list model names",
-          "- `rails_get_model_details(model:\"User\")` — full detail",
-          "",
-          "## rails_get_routes",
-          "Params: controller, detail, limit, offset",
-          "- `rails_get_routes(detail:\"summary\")` — counts per controller",
-          "- `rails_get_routes(controller:\"users\")` — one controller",
-          "",
-          "## rails_get_controllers",
-          "Params: controller, detail",
-          "- `rails_get_controllers(detail:\"summary\")` — names + action counts",
-          "- `rails_get_controllers(controller:\"UsersController\")` — full detail",
-          "",
-          "## Other tools",
+          "- `rails_get_schema(detail:\"summary\")` → then `rails_get_schema(table:\"name\")`",
+          "- `rails_get_model_details(detail:\"summary\")` → then `rails_get_model_details(model:\"Name\")`",
+          "- `rails_get_routes(detail:\"summary\")` → then `rails_get_routes(controller:\"name\")`",
+          "- `rails_get_controllers(detail:\"summary\")` → then `rails_get_controllers(controller:\"Name\")`",
           "- `rails_get_config` — cache, session, middleware",
           "- `rails_get_test_info` — framework, factories, CI",
           "- `rails_get_gems` — categorized gems",
           "- `rails_get_conventions` — architecture patterns",
-          "- `rails_search_code(pattern:\"regex\", file_type:\"rb\", max_results:20)`",
-          "",
-          "Start with detail:\"summary\", then drill into specifics."
+          "- `rails_search_code(pattern:\"regex\", file_type:\"rb\")` — codebase search"
         ]
 
         lines.join("\n")

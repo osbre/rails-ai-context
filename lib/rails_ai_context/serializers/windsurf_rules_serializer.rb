@@ -51,30 +51,17 @@ module RailsAiContext
 
       def render_mcp_tools_rule # rubocop:disable Metrics/MethodLength
         lines = [
-          "# MCP Tool Reference",
+          "# Rails MCP Tools — Use These First",
           "",
-          "Detail levels: summary | standard (default) | full",
+          "ALWAYS use these tools BEFORE reading db/schema.rb, config/routes.rb, or model files.",
+          "Start with detail:\"summary\", then drill into specifics.",
           "",
-          "## Schema",
-          "rails_get_schema(table:\"name\"|detail:\"summary\"|limit:N|offset:N)",
-          "",
-          "## Models",
-          "rails_get_model_details(model:\"Name\"|detail:\"summary\")",
-          "",
-          "## Routes",
-          "rails_get_routes(controller:\"name\"|detail:\"summary\"|limit:N|offset:N)",
-          "",
-          "## Controllers",
-          "rails_get_controllers(controller:\"Name\"|detail:\"summary\")",
-          "",
-          "## Other",
-          "- rails_get_config — cache, session, middleware",
-          "- rails_get_test_info — framework, factories, CI",
-          "- rails_get_gems — categorized gems",
-          "- rails_get_conventions — architecture patterns",
-          "- rails_search_code(pattern:\"regex\"|file_type:\"rb\"|max_results:N)",
-          "",
-          "Start with detail:\"summary\", then drill into specifics."
+          "- rails_get_schema(detail:\"summary\") → rails_get_schema(table:\"name\")",
+          "- rails_get_model_details(detail:\"summary\") → rails_get_model_details(model:\"Name\")",
+          "- rails_get_routes(detail:\"summary\") → rails_get_routes(controller:\"name\")",
+          "- rails_get_controllers(detail:\"summary\") → rails_get_controllers(controller:\"Name\")",
+          "- rails_get_config | rails_get_test_info | rails_get_gems | rails_get_conventions",
+          "- rails_search_code(pattern:\"regex\", file_type:\"rb\")"
         ]
 
         lines.join("\n")

@@ -2,7 +2,7 @@
 
 module RailsAiContext
   module Serializers
-    # Generates compact, imperative-tone rules for legacy .cursorrules.
+    # Generates compact, imperative-tone rules for project context.
     # In :compact mode (default), produces ≤200 lines pointing to MCP tools.
     # In :full mode, delegates to MarkdownSerializer with rules-style header.
     class RulesSerializer

@@ -32,7 +32,7 @@ module RailsAiContext
       Introspector.new(app).call
     end
 
-    # Generate context files (CLAUDE.md, .cursorrules, etc.)
+    # Generate context files (CLAUDE.md, .cursor/rules/, etc.)
     def generate_context(app = nil, format: :all)
       app ||= Rails.application
       context = introspect(app)

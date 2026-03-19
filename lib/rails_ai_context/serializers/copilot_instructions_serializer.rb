@@ -19,6 +19,7 @@ module RailsAiContext
         skipped = []
 
         files = {
+          "rails-context.instructions.md" => render_context_instructions,
           "rails-models.instructions.md" => render_models_instructions,
           "rails-controllers.instructions.md" => render_controllers_instructions,
           "rails-mcp-tools.instructions.md" => render_mcp_tools_instructions
@@ -39,6 +40,48 @@ module RailsAiContext
       end
 
       private
+
+      def render_context_instructions
+        lines = [
+          "---",
+          "applyTo: \"**/*\"",
+          "---",
+          "",
+          "# #{context[:app_name] || 'Rails App'} — Overview",
+          "",
+          "Rails #{context[:rails_version]} | Ruby #{context[:ruby_version]}",
+          ""
+        ]
+
+        schema = context[:schema]
+        if schema.is_a?(Hash) && !schema[:error]
+          lines << "- Database: #{schema[:adapter]} — #{schema[:total_tables]} tables"
+        end
+
+        models = context[:models]
+        lines << "- Models: #{models.size}" if models.is_a?(Hash) && !models[:error]
+
+        routes = context[:routes]
+        lines << "- Routes: #{routes[:total_routes]}" if routes.is_a?(Hash) && !routes[:error]
+
+        gems = context[:gems]
+        if gems.is_a?(Hash) && !gems[:error]
+          notable = gems[:notable_gems] || []
+          notable.group_by { |g| g[:category]&.to_s || "other" }.first(6).each do |cat, gem_list|
+            lines << "- #{cat}: #{gem_list.map { |g| g[:name] }.join(', ')}"
+          end
+        end
+
+        conv = context[:conventions]
+        if conv.is_a?(Hash) && !conv[:error]
+          (conv[:architecture] || []).first(5).each { |p| lines << "- #{p}" }
+        end
+
+        lines << ""
+        lines << "Use MCP tools for detailed data. Start with `detail:\"summary\"`."
+
+        lines.join("\n")
+      end
 
       def render_models_instructions
         models = context[:models]
@@ -97,43 +140,21 @@ module RailsAiContext
           "applyTo: \"**/*\"",
           "---",
           "",
-          "# MCP Tool Reference",
+          "# Rails MCP Tools — Use These First",
           "",
-          "This project has MCP tools for live introspection.",
+          "ALWAYS use these MCP tools BEFORE reading db/schema.rb, config/routes.rb, or model files.",
+          "They return parsed, up-to-date data and save tokens.",
           "**Start with `detail:\"summary\"`, then drill into specifics.**",
           "",
-          "## Detail levels (schema, routes, models, controllers)",
-          "- `summary` — names + counts (default limit: 50)",
-          "- `standard` — names + key details (default limit: 15, this is the default)",
-          "- `full` — everything including indexes, FKs (default limit: 5)",
-          "",
-          "## rails_get_schema",
-          "Params: `table`, `detail`, `limit`, `offset`, `format`",
-          "- `rails_get_schema(detail:\"summary\")` — all tables with column counts",
-          "- `rails_get_schema(table:\"users\")` — full detail for one table",
-          "- `rails_get_schema(detail:\"summary\", limit:20, offset:40)` — paginate",
-          "",
-          "## rails_get_model_details",
-          "Params: `model`, `detail`",
-          "- `rails_get_model_details(detail:\"summary\")` — list all model names",
-          "- `rails_get_model_details(model:\"User\")` — full associations, validations, scopes",
-          "",
-          "## rails_get_routes",
-          "Params: `controller`, `detail`, `limit`, `offset`",
-          "- `rails_get_routes(detail:\"summary\")` — route counts per controller",
-          "- `rails_get_routes(controller:\"users\")` — routes for one controller",
-          "",
-          "## rails_get_controllers",
-          "Params: `controller`, `detail`",
-          "- `rails_get_controllers(detail:\"summary\")` — names + action counts",
-          "- `rails_get_controllers(controller:\"UsersController\")` — actions, filters, params",
-          "",
-          "## Other tools",
-          "- `rails_get_config` — cache store, session, timezone, middleware",
+          "- `rails_get_schema(detail:\"summary\")` → `rails_get_schema(table:\"name\")`",
+          "- `rails_get_model_details(detail:\"summary\")` → `rails_get_model_details(model:\"Name\")`",
+          "- `rails_get_routes(detail:\"summary\")` → `rails_get_routes(controller:\"name\")`",
+          "- `rails_get_controllers(detail:\"summary\")` → `rails_get_controllers(controller:\"Name\")`",
+          "- `rails_get_config` — cache, session, middleware, initializers",
           "- `rails_get_test_info` — test framework, factories/fixtures, CI config",
           "- `rails_get_gems` — notable gems categorized by function",
           "- `rails_get_conventions` — architecture patterns, directory structure",
-          "- `rails_search_code(pattern:\"regex\", file_type:\"rb\", max_results:20)` — codebase search"
+          "- `rails_search_code(pattern:\"regex\", file_type:\"rb\")` — codebase search"
         ]
 
         lines.join("\n")

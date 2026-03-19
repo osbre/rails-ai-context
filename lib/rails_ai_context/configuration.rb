@@ -53,6 +53,10 @@ module RailsAiContext
     # Debounce interval in seconds for live reload file watching
     attr_accessor :live_reload_debounce
 
+    # Whether to generate root-level context files (CLAUDE.md, AGENTS.md, .windsurfrules, etc.)
+    # When false, only generates split rule files (.claude/rules/, .cursor/rules/, etc.)
+    attr_accessor :generate_root_files
+
     def initialize
       @server_name         = "rails-ai-context"
       @server_version      = RailsAiContext::VERSION
@@ -75,6 +79,7 @@ module RailsAiContext
       @max_tool_response_chars  = 120_000
       @live_reload              = :auto
       @live_reload_debounce     = 1.5
+      @generate_root_files      = true
     end
 
     def preset=(name)

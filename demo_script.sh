@@ -61,7 +61,7 @@ echo '  ✅ app/models/AGENTS.md'
 sleep 0.08
 echo '  ✅ app/controllers/AGENTS.md'
 sleep 0.08
-echo '  ✅ .cursorrules'
+echo '  ✅ .cursor/rules/rails-project.mdc'
 sleep 0.08
 echo '  ✅ .cursor/rules/rails-project.mdc'
 sleep 0.08
