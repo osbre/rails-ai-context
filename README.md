@@ -21,22 +21,37 @@ The AI doesn't know your schema, your Devise setup, your Sidekiq jobs, or that `
 
 ---
 
-## Proof: 35% Token Savings (Real Benchmark)
+## Proof: 37% Token Savings (Real Benchmark)
 
-We ran the same feature task — *"Add status and date range filters to the Cooks index page"* — across 4 scenarios in parallel on a real Rails app:
+Same task — *"Add status and date range filters to the Cooks index page"* — 4 scenarios in parallel, same Rails app:
 
-| Scenario | MCP Tools | CLAUDE.md | Tokens Used | Savings |
-|----------|-----------|-----------|-------------|---------|
-| **MCP + CLAUDE.md** | Yes | Yes | **25,884** | **35% saved** |
-| MCP only | Yes | No | 27,822 | 31% saved |
-| CLAUDE.md only | No | Yes | 32,699 | 19% saved |
-| Zero (nothing) | No | No | 40,129 | baseline |
+| Setup | Tokens | Saved | What it knows |
+|-------|--------|-------|---------------|
+| **rails-ai-context (full)** | **28,834** | **37%** | 11 MCP tools + generated docs + rules |
+| rails-ai-context CLAUDE.md only | 33,106 | 27% | Generated docs + rules, no MCP tools |
+| Normal Claude `/init` | 40,700 | 11% | Generic CLAUDE.md only |
+| No rails-ai-context at all | 45,477 | baseline | Nothing — discovers everything from scratch |
 
-All 4 produced the same working feature. The only difference was how many tokens were burned getting there.
+```
+No rails-ai-context          45,477 tk  █████████████████████████████████████████████
+Normal Claude /init           40,700 tk  █████████████████████████████████████████     -11%
+rails-ai-context CLAUDE.md    33,106 tk  █████████████████████████████████             -27%
+rails-ai-context (full)       28,834 tk  █████████████████████████████                 -37%
+```
 
 https://github.com/user-attachments/assets/171f52ae-bd30-43f6-a44f-bcfdda7fc139
 
-MCP tools give the AI structured, filtered access to your codebase instead of reading entire files. On this small 5-model app, that saved 35%. **On larger projects, the savings compound significantly.**
+**What each layer gives you:**
+
+| | Normal `/init` | rails-ai-context CLAUDE.md | rails-ai-context full |
+|---|---|---|---|
+| Knows it's Rails + Tailwind | Yes | Yes | Yes |
+| Knows model names, columns, associations | No | Yes | Yes |
+| Knows controller actions, filters | No | Yes | Yes |
+| Discovery overhead | ~8 calls | 0 calls | 0 calls |
+| Structured MCP queries | No | No | Yes — 5 MCP calls replace file reads |
+
+**~16,600 fewer tokens per task** vs no gem at all. On larger projects, the savings compound significantly.
 
 ---
 
@@ -60,10 +75,10 @@ The install generator creates `.mcp.json` for auto-discovery — Claude Code and
 
 ![Token Comparison](https://raw.githubusercontent.com/crisnahine/rails-ai-context/main/docs/token-comparison.jpeg)
 
-- Compact context files load ≤150 lines instead of thousands
-- MCP tools return `detail:"summary"` first (~55 tokens for schema overview), then drill into specifics
-- Specific lookups (`table:`, `model:`, `controller:`) return only what's needed
-- Pagination prevents dumping hundreds of tables/routes at once
+- `/init` saves 11% — knows the framework but wastes tokens discovering models and tables
+- **CLAUDE.md saves 27%** — complete Rails-specific map, zero discovery overhead
+- **Full MCP saves 37%** — structured queries replace expensive full-file reads
+- MCP tools return `detail:"summary"` first (~55 tokens), then drill into specifics
 - Split rule files only activate in relevant directories
 
 ---
