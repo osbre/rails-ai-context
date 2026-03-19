@@ -163,18 +163,20 @@ rails_get_model_details(model: "User")
 
 A safety net (`max_tool_response_chars`, default 120K) truncates oversized responses with hints to use filters.
 
-### Token Savings
+### Token Savings — Real Benchmark
 
-The summary-first approach dramatically reduces AI token consumption — especially for large apps:
+We ran the same feature task — *"Add status and date range filters to the Cooks index page"* — across 4 scenarios in parallel on a real Rails app:
 
-| Metric | Without gem | Full dump (v0.6) | Smart mode (v0.7+) |
-|--------|-------------|------------------|---------------------|
-| Context file | 0 tokens | ~15,000 tokens | ~1,500 tokens |
-| Schema lookup | manual copy-paste | ~45,000 tokens (all tables) | ~800 tokens (summary) |
-| Drill into 1 table | manual copy-paste | included above | ~400 tokens |
-| **2-call workflow** | **error-prone** | **~60,000 tokens** | **~2,700 tokens** |
+| Scenario | MCP Tools | CLAUDE.md | Tokens Used | Savings vs Zero |
+|----------|-----------|-----------|-------------|-----------------|
+| **MCP + CLAUDE.md** | Yes | Yes | 25,884 | **35% saved** |
+| MCP only | Yes | No | 27,822 | 31% saved |
+| CLAUDE.md only | No | Yes | 32,699 | 19% saved |
+| Zero (nothing) | No | No | 40,129 | baseline |
 
-That's **~95% fewer tokens** for the same understanding. The AI gets a compact overview first, then only loads what it actually needs — you pay for precision, not bulk.
+All 4 produced the same working feature. The only difference was token consumption. [Watch the full benchmark video](https://github.com/crisnahine/rails-ai-context/releases/tag/v0.9.0).
+
+MCP tools give the AI structured, filtered access to your codebase instead of reading entire files. On this small 5-model app, that saved 35%. On larger projects, the savings compound significantly.
 
 **How it saves:**
 - Compact context files load ≤150 lines instead of thousands
