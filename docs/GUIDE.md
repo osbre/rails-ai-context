@@ -39,7 +39,7 @@ rails ai:context
 This creates:
 1. `config/initializers/rails_ai_context.rb` — configuration file
 2. `.mcp.json` — MCP auto-discovery for Claude Code and Cursor
-3. 17 context files — tailored for each AI assistant
+3. 20 context files — tailored for each AI assistant
 
 ### Existing project
 
@@ -189,7 +189,7 @@ Commit **all files except `.ai-context.json`** (which is gitignored). This gives
 
 | Command | Mode | Format | Description |
 |---------|------|--------|-------------|
-| `rails ai:context` | compact | all | Generate all 18 context files |
+| `rails ai:context` | compact | all | Generate all 20 context files |
 | `rails ai:context:full` | full | all | Generate all files in full mode |
 | `rails ai:context:claude` | compact | Claude | CLAUDE.md + .claude/rules/ |
 | `rails ai:context:opencode` | compact | OpenCode | AGENTS.md + per-directory AGENTS.md |
@@ -804,7 +804,7 @@ config.introspectors += %i[auth api]
 rails ai:doctor
 ```
 
-Runs 12 checks and reports an AI readiness score (0-100):
+Runs 13 checks and reports an AI readiness score (0-100):
 
 | Check | What it verifies |
 |-------|------------------|
@@ -820,6 +820,7 @@ Runs 12 checks and reports an AI readiness score (0-100):
 | Context files | Generated context files exist |
 | MCP Server | MCP server can be built |
 | Ripgrep | `rg` binary installed (optional, falls back to Ruby) |
+| Live reload | `listen` gem installed (optional, enables MCP live reload) |
 
 Each check reports **pass**, **warn**, or **fail** with fix suggestions.
 

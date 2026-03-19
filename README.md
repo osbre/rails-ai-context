@@ -45,7 +45,7 @@ The install generator creates `.mcp.json` for auto-discovery — Claude Code and
 
 ## What Gets Generated
 
-`rails ai:context` generates **17 files** tailored to each AI assistant:
+`rails ai:context` generates **20 files** tailored to each AI assistant:
 
 ```
 your-rails-app/
@@ -301,9 +301,10 @@ Frontend introspectors (views, Turbo, Stimulus, assets) degrade gracefully — t
 
 | Command | Description |
 |---------|-------------|
-| `rails ai:context` | Generate all 17 context files (skips unchanged) |
+| `rails ai:context` | Generate all 20 context files (skips unchanged) |
 | `rails ai:context:full` | Generate all files in full mode (dumps everything) |
 | `rails ai:context:claude` | Generate Claude Code files only |
+| `rails ai:context:opencode` | Generate OpenCode files only |
 | `rails ai:context:cursor` | Generate Cursor files only |
 | `rails ai:context:windsurf` | Generate Windsurf files only |
 | `rails ai:context:copilot` | Generate Copilot files only |
@@ -352,7 +353,7 @@ The gem parses `db/schema.rb` as text when no database is connected. Works in CI
 ```bash
 git clone https://github.com/crisnahine/rails-ai-context.git
 cd rails-ai-context && bundle install
-bundle exec rspec       # 373 examples
+bundle exec rspec       # 385 examples
 bundle exec rubocop     # Lint
 ```
 
