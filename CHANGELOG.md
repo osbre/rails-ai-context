@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-03-20
+
+### Fixed
+
+- **Schema 0 indexes** — Fixed composite index parsing in schema.rb (regex didn't match array syntax) and structure.sql (`.first` only took first column). Both single and composite indexes now extracted correctly.
+- **Stale routes after editing routes.rb** — Route introspector now calls `routes_reloader.execute_if_updated` to force Rails to reload routes before extraction.
+- **Config "not available"** — Added `:config` to `:standard` preset. Was `:full` only, so default users never saw config data.
+- **Stimulus values lost name** — Fixed parsing for both simple (`name: Type`) and complex (`name: { type: Type, default: val }`) formats. Now shows `max: Number (default: 3)`.
+- **Model concerns noise** — Filtered out internal Rails modules (ActiveRecord::, ActiveModel::, Kernel, JSON::, etc.) from concerns list.
+
+### Added
+
+- **Route helpers in standard detail** — `rails_get_routes(detail: "standard")` now includes route helper names alongside paths.
+- **`app_only` filter for routes** — `rails_get_routes(app_only: true)` (default) hides internal Rails routes (Active Storage, Action Mailbox, Conductor).
+- **Search context lines** — `rails_search_code(context_lines: 2)` adds surrounding lines to matches (passes `-C` to ripgrep).
+- **Stimulus dash/underscore normalization** — Both `weekly-chart` and `weekly_chart` work for controller lookup. Output shows HTML `data-controller` attribute.
+- **Model public method signatures** — `rails_get_model_details(model: "Cook")` shows method names with params from source, stopping at private boundary.
+
 ## [0.13.0] - 2026-03-20
 
 ### Added
