@@ -673,7 +673,7 @@ All split rules include an app overview file, so no context is lost when root fi
 
 ## Introspectors — Full List
 
-### Standard preset (9 introspectors)
+### Standard preset (12 introspectors)
 
 These run by default. Fast and cover core Rails structure.
 
@@ -689,7 +689,7 @@ These run by default. Fast and cover core Rails structure.
 | `tests` | Test framework (rspec/minitest), factories/fixtures with locations and counts, system tests, CI config files, coverage tool, test helpers, VCR cassettes. |
 | `migrations` | Total count, schema version, pending migrations, recent migration history with detected actions (create_table, add_column, etc.), migration statistics. |
 
-### Full preset (29 introspectors)
+### Full preset (28 introspectors)
 
 Includes all standard introspectors plus:
 
@@ -813,10 +813,10 @@ OpenCode uses **per-directory lazy-loading**: when the agent reads a file, it wa
 | Setup | Coverage | Notes |
 |-------|----------|-------|
 | Rails full-stack (ERB + Hotwire) | 29/29 | All introspectors relevant |
-| Rails + Inertia.js (React/Vue) | ~22/27 | Views/Turbo partially useful, backend fully covered |
-| Rails API + React/Next.js SPA | ~20/27 | Schema, models, routes, API, auth, jobs — all covered |
-| Rails API + mobile app | ~20/27 | Same as SPA — backend introspection is identical |
-| Rails engine (mountable gem) | ~15/27 | Core introspectors (schema, models, routes, gems) work |
+| Rails + Inertia.js (React/Vue) | ~22/29 | Views/Turbo partially useful, backend fully covered |
+| Rails API + React/Next.js SPA | ~20/29 | Schema, models, routes, API, auth, jobs — all covered |
+| Rails API + mobile app | ~20/29 | Same as SPA — backend introspection is identical |
+| Rails engine (mountable gem) | ~15/29 | Core introspectors (schema, models, routes, gems) work |
 
 Frontend introspectors (views, Turbo, Stimulus, assets) degrade gracefully — they report nothing when those features aren't present.
 

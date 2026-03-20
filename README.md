@@ -352,10 +352,10 @@ Works with every Rails architecture — auto-detects what's relevant:
 | Setup | Coverage | Notes |
 |-------|----------|-------|
 | Rails full-stack (ERB + Hotwire) | 29/29 | All introspectors relevant |
-| Rails + Inertia.js (React/Vue) | ~22/27 | Views/Turbo partially useful, backend fully covered |
-| Rails API + React/Next.js SPA | ~20/27 | Schema, models, routes, API, auth, jobs — all covered |
-| Rails API + mobile app | ~20/27 | Same as SPA — backend introspection is identical |
-| Rails engine (mountable gem) | ~15/27 | Core introspectors (schema, models, routes, gems) work |
+| Rails + Inertia.js (React/Vue) | ~22/29 | Views/Turbo partially useful, backend fully covered |
+| Rails API + React/Next.js SPA | ~20/29 | Schema, models, routes, API, auth, jobs — all covered |
+| Rails API + mobile app | ~20/29 | Same as SPA — backend introspection is identical |
+| Rails engine (mountable gem) | ~15/29 | Core introspectors (schema, models, routes, gems) work |
 
 Frontend introspectors (views, Turbo, Stimulus, assets) degrade gracefully — they report nothing when those features aren't present.
 
