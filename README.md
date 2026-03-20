@@ -147,8 +147,9 @@ your-rails-app/
 │   ├── CLAUDE.md                                         ≤150 lines (compact)
 │   └── .claude/rules/
 │       ├── rails-context.md                              app overview
-│       ├── rails-schema.md                               table listing
+│       ├── rails-schema.md                               table listing + column types
 │       ├── rails-models.md                               model listing
+│       ├── rails-ui-patterns.md                          CSS/Tailwind component patterns
 │       └── rails-mcp-tools.md                            full tool reference
 │
 ├── 🟢 Cursor
@@ -156,6 +157,7 @@ your-rails-app/
 │       ├── rails-project.mdc                             alwaysApply: true
 │       ├── rails-models.mdc                              globs: app/models/**
 │       ├── rails-controllers.mdc                         globs: app/controllers/**
+│       ├── rails-ui-patterns.mdc                         globs: app/views/**
 │       └── rails-mcp-tools.mdc                           alwaysApply: true
 │
 ├── ⚡ OpenCode
@@ -167,13 +169,16 @@ your-rails-app/
 │   ├── .windsurfrules                                    ≤5,800 chars (6K limit)
 │   └── .windsurf/rules/
 │       ├── rails-context.md                              project overview
+│       ├── rails-ui-patterns.md                          CSS component patterns
 │       └── rails-mcp-tools.md                            tool reference
 │
 ├── 🟠 GitHub Copilot
 │   ├── .github/copilot-instructions.md                   ≤500 lines (compact)
 │   └── .github/instructions/
+│       ├── rails-context.instructions.md                 applyTo: **/*
 │       ├── rails-models.instructions.md                  applyTo: app/models/**
 │       ├── rails-controllers.instructions.md             applyTo: app/controllers/**
+│       ├── rails-ui-patterns.instructions.md             applyTo: app/views/**
 │       └── rails-mcp-tools.instructions.md               applyTo: **/*
 │
 ├── 📋 .ai-context.json                                   full JSON (programmatic)

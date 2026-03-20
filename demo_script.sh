@@ -49,9 +49,13 @@ echo ''
 sleep 0.2
 echo '  ✅ CLAUDE.md'
 sleep 0.08
+echo '  ✅ .claude/rules/rails-context.md'
+sleep 0.08
 echo '  ✅ .claude/rules/rails-schema.md'
 sleep 0.08
 echo '  ✅ .claude/rules/rails-models.md'
+sleep 0.08
+echo '  ✅ .claude/rules/rails-ui-patterns.md'
 sleep 0.08
 echo '  ✅ .claude/rules/rails-mcp-tools.md'
 sleep 0.08
@@ -63,11 +67,11 @@ echo '  ✅ app/controllers/AGENTS.md'
 sleep 0.08
 echo '  ✅ .cursor/rules/rails-project.mdc'
 sleep 0.08
-echo '  ✅ .cursor/rules/rails-project.mdc'
-sleep 0.08
 echo '  ✅ .cursor/rules/rails-models.mdc'
 sleep 0.08
 echo '  ✅ .cursor/rules/rails-controllers.mdc'
+sleep 0.08
+echo '  ✅ .cursor/rules/rails-ui-patterns.mdc'
 sleep 0.08
 echo '  ✅ .cursor/rules/rails-mcp-tools.mdc'
 sleep 0.08
@@ -75,13 +79,19 @@ echo '  ✅ .windsurfrules'
 sleep 0.08
 echo '  ✅ .windsurf/rules/rails-context.md'
 sleep 0.08
+echo '  ✅ .windsurf/rules/rails-ui-patterns.md'
+sleep 0.08
 echo '  ✅ .windsurf/rules/rails-mcp-tools.md'
 sleep 0.08
 echo '  ✅ .github/copilot-instructions.md'
 sleep 0.08
+echo '  ✅ .github/instructions/rails-context.instructions.md'
+sleep 0.08
 echo '  ✅ .github/instructions/rails-models.instructions.md'
 sleep 0.08
 echo '  ✅ .github/instructions/rails-controllers.instructions.md'
+sleep 0.08
+echo '  ✅ .github/instructions/rails-ui-patterns.instructions.md'
 sleep 0.08
 echo '  ✅ .github/instructions/rails-mcp-tools.instructions.md'
 sleep 0.08
