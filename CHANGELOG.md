@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-03-20
+
+### Added
+
+- **Design Token Introspector** — auto-detects CSS framework and extracts tokens from Tailwind v3/v4, Bootstrap/Sass, plain CSS custom properties, Webpacker-era stylesheets, and ViewComponent sidecar CSS. Tested across 8 CSS setups. Added to standard preset.
+- **`rails_get_edit_context` MCP tool** — purpose-built for surgical edits. Returns code around a match point with line numbers. Replaces the Read + Edit workflow with a single call.
+- **Line numbers in action source** — `rails_get_controllers(action: "index")` now returns start/end line numbers for targeted editing.
+- **Model file structure** — `rails_get_model_details(model: "Cook")` now returns line ranges for each section (associations, validations, scopes, etc.).
+
+### Changed
+
+- **MCP instructions updated** — "Use MCP for reference files (schema, routes, tests). Read directly if you'll edit." Prevents unnecessary double-reads.
+- **UI pattern extractor rewritten** — semantic labels (primary/secondary/danger), deduplication, 12+ component types, color scheme + radius + form layout extraction, framework-agnostic.
+- **Schema rules include column types** — `status:string, intake:jsonb` instead of just names. Also shows foreign keys, indexes, and enum values.
+- **View standard detail enhanced** — shows partial fields, helper methods, and shared partials.
+
+### Security
+
+- **File.realpath symlink protection** on all file-reading tools (get_view, get_edit_context, get_test_info, search_code).
+- **File size limits** — 2MB on controllers/models/views, 500KB on test files.
+- **Ripgrep flag injection prevention** — `--` separator before user pattern.
+- **Nil guards** on all component rendering across 10 serializers.
+- **Non-greedy regex** — ReDoS prevention in card/input/label pattern matching.
+- **UTF-8 encoding safety** — all File.read calls handle binary/non-UTF-8 files gracefully.
+
+### Fixed
+
+- Off-by-one in model structure section line ranges.
+- Stimulus sort crash on nil controller name.
+- Secondary button picking up disabled states (`cursor-not-allowed`).
+- Progress bars misclassified as badges.
+- Input detection picking up alert divs instead of actual inputs.
+
+## [0.11.0] - 2026-03-20
+
+### Added
+
+- **UI pattern extraction** — scans all views for repeated CSS class patterns. Detects buttons, cards, inputs, labels, badges, links, headings, flashes, alerts. Added to ALL serializers (root files + split rules for Claude, Cursor, Windsurf, Copilot, OpenCode).
+- **View partial structure** — `rails_get_view(detail: "standard")` shows model fields and helper methods used by each partial.
+- **Schema column names** — `.claude/rules/rails-schema.md` shows key column names with types, foreign keys, indexes, and enum values. Keeps polymorphic `_type`, STI `type`, and soft-delete `deleted_at` columns.
+
 ## [0.10.0] - 2026-03-19
 
 ### Added
