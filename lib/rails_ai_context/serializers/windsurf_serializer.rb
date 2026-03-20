@@ -71,6 +71,17 @@ module RailsAiContext
           end
         end
 
+        # UI Patterns (compact — character budget is tight)
+        vt = context[:view_templates]
+        if vt.is_a?(Hash) && !vt[:error]
+          patterns = vt[:ui_patterns] || {}
+          if patterns.any?
+            lines << "# UI Patterns"
+            patterns.each { |type, list| list.first(1).each { |c| lines << "- #{type}: `#{c}`" } }
+            lines << ""
+          end
+        end
+
         # MCP tools — compact but complete (character budget is tight)
         lines << "# MCP Tools (detail:\"summary\"|\"standard\"|\"full\")"
         lines << "- rails_get_schema(table:\"name\"|detail:\"summary\"|limit:N|offset:N)"

@@ -63,14 +63,31 @@ module RailsAiContext
           text_response(lines.join("\n"))
 
         when "standard"
-          lines = [ "# Views (#{templates.size} templates)", "" ]
+          all_partials = data[:partials] || {}
+          lines = [ "# Views (#{templates.size} templates, #{all_partials.size} partials)", "" ]
           templates.keys.map { |k| k.split("/").first }.uniq.sort.each do |ctrl|
             ctrl_templates = templates.select { |k, _| k.start_with?("#{ctrl}/") }
             lines << "## #{ctrl}/"
             ctrl_templates.sort.each do |name, meta|
-              parts = meta[:partials]&.any? ? " partials: #{meta[:partials].join(', ')}" : ""
+              parts = meta[:partials]&.any? ? " renders: #{meta[:partials].join(', ')}" : ""
               stim = meta[:stimulus]&.any? ? " stimulus: #{meta[:stimulus].join(', ')}" : ""
               lines << "- #{File.basename(name)} (#{meta[:lines]} lines)#{parts}#{stim}"
+            end
+            # Show partials for this controller with field/helper info
+            ctrl_partials = all_partials.select { |k, _| k.start_with?("#{ctrl}/") }
+            ctrl_partials.sort.each do |name, meta|
+              fields = meta[:fields]&.any? ? " fields: #{meta[:fields].join(', ')}" : ""
+              helpers = meta[:helpers]&.any? ? " helpers: #{meta[:helpers].join(', ')}" : ""
+              lines << "- #{File.basename(name)} (#{meta[:lines]} lines)#{fields}#{helpers}"
+            end
+            lines << ""
+          end
+          # Show shared partials
+          shared = all_partials.select { |k, _| k.start_with?("shared/") }
+          if shared.any?
+            lines << "## shared/"
+            shared.sort.each do |name, meta|
+              lines << "- #{File.basename(name)} (#{meta[:lines]} lines)"
             end
             lines << ""
           end

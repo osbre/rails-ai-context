@@ -25,6 +25,7 @@ module RailsAiContext
           "rails-project.mdc" => render_project_rule,
           "rails-models.mdc" => render_models_rule,
           "rails-controllers.mdc" => render_controllers_rule,
+          "rails-ui-patterns.mdc" => render_ui_patterns_rule,
           "rails-mcp-tools.mdc" => render_mcp_tools_rule
         }
 
@@ -150,6 +151,33 @@ module RailsAiContext
         lines << "- ...#{controllers.size - 25} more" if controllers.size > 25
         lines << ""
         lines << "Use `rails_get_controllers` MCP tool with controller:\"Name\" for full detail."
+
+        lines.join("\n")
+      end
+
+      def render_ui_patterns_rule
+        vt = context[:view_templates]
+        return nil unless vt.is_a?(Hash) && !vt[:error]
+        patterns = vt[:ui_patterns] || {}
+        return nil if patterns.empty?
+
+        lines = [
+          "---",
+          "description: \"UI/CSS patterns used in this Rails app\"",
+          "globs:",
+          "  - \"app/views/**/*.erb\"",
+          "alwaysApply: false",
+          "---",
+          "",
+          "# UI Patterns",
+          "",
+          "Use these CSS class patterns to match the existing design.",
+          ""
+        ]
+
+        patterns.each do |type, classes_list|
+          classes_list.each { |c| lines << "- #{type.to_s.chomp('s').capitalize}: `#{c}`" }
+        end
 
         lines.join("\n")
       end

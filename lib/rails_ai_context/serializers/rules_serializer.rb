@@ -73,6 +73,19 @@ module RailsAiContext
           end
         end
 
+        # UI Patterns
+        vt = context[:view_templates]
+        if vt.is_a?(Hash) && !vt[:error]
+          patterns = vt[:ui_patterns] || {}
+          if patterns.any?
+            lines << "## UI Patterns"
+            patterns.each do |type, classes_list|
+              classes_list.each { |c| lines << "- #{type.to_s.chomp('s').capitalize}: `#{c}`" }
+            end
+            lines << ""
+          end
+        end
+
         # MCP tools
         lines << "## MCP Tool Reference"
         lines << ""

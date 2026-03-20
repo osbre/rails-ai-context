@@ -29,6 +29,7 @@ module RailsAiContext
         lines.concat(render_key_models)
         lines.concat(render_notable_gems)
         lines.concat(render_architecture)
+        lines.concat(render_ui_patterns)
         lines.concat(render_mcp_guide)
         lines.concat(render_conventions)
         lines.concat(render_commands)
@@ -154,6 +155,22 @@ module RailsAiContext
         lines = [ "## Architecture" ]
         arch.each { |p| lines << "- #{p}" }
         patterns.first(8).each { |p| lines << "- #{p}" }
+        lines << ""
+        lines
+      end
+
+      def render_ui_patterns
+        vt = context[:view_templates]
+        return [] unless vt.is_a?(Hash) && !vt[:error]
+        patterns = vt[:ui_patterns] || {}
+        return [] if patterns.empty?
+
+        lines = [ "## UI Patterns" ]
+        patterns.each do |type, classes_list|
+          classes_list.each do |classes|
+            lines << "- #{type.to_s.chomp('s').capitalize}: `#{classes}`"
+          end
+        end
         lines << ""
         lines
       end

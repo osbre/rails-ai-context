@@ -22,6 +22,7 @@ module RailsAiContext
           "rails-context.instructions.md" => render_context_instructions,
           "rails-models.instructions.md" => render_models_instructions,
           "rails-controllers.instructions.md" => render_controllers_instructions,
+          "rails-ui-patterns.instructions.md" => render_ui_patterns_instructions,
           "rails-mcp-tools.instructions.md" => render_mcp_tools_instructions
         }
 
@@ -129,6 +130,30 @@ module RailsAiContext
           info = controllers[name]
           actions = info[:actions]&.size || 0
           lines << "- #{name} (#{actions} actions)"
+        end
+
+        lines.join("\n")
+      end
+
+      def render_ui_patterns_instructions
+        vt = context[:view_templates]
+        return nil unless vt.is_a?(Hash) && !vt[:error]
+        patterns = vt[:ui_patterns] || {}
+        return nil if patterns.empty?
+
+        lines = [
+          "---",
+          "applyTo: \"app/views/**/*.erb\"",
+          "---",
+          "",
+          "# UI Patterns",
+          "",
+          "Use these CSS class patterns to match the existing design.",
+          ""
+        ]
+
+        patterns.each do |type, classes_list|
+          classes_list.each { |c| lines << "- #{type.to_s.chomp('s').capitalize}: `#{c}`" }
         end
 
         lines.join("\n")

@@ -22,6 +22,7 @@ module RailsAiContext
 
         files = {
           "rails-context.md" => render_context_rule,
+          "rails-ui-patterns.md" => render_ui_patterns_rule,
           "rails-mcp-tools.md" => render_mcp_tools_rule
         }
 
@@ -47,6 +48,19 @@ module RailsAiContext
       def render_context_rule
         # Reuse WindsurfSerializer content
         WindsurfSerializer.new(context).call
+      end
+
+      def render_ui_patterns_rule
+        vt = context[:view_templates]
+        return nil unless vt.is_a?(Hash) && !vt[:error]
+        patterns = vt[:ui_patterns] || {}
+        return nil if patterns.empty?
+
+        lines = [ "# UI Patterns", "", "Match these CSS classes when creating new views.", "" ]
+        patterns.each do |type, classes_list|
+          classes_list.first(2).each { |c| lines << "- #{type}: `#{c}`" }
+        end
+        lines.join("\n")
       end
 
       def render_mcp_tools_rule # rubocop:disable Metrics/MethodLength

@@ -24,6 +24,7 @@ module RailsAiContext
           "rails-context.md" => render_context_overview,
           "rails-schema.md" => render_schema_reference,
           "rails-models.md" => render_models_reference,
+          "rails-ui-patterns.md" => render_ui_patterns_reference,
           "rails-mcp-tools.md" => render_mcp_tools_reference
         }
 
@@ -96,11 +97,34 @@ module RailsAiContext
           ""
         ]
 
-        tables.keys.sort.each do |name|
+        skip_cols = %w[id created_at updated_at]
+        # Always show these even if they end in _id/_type (important for AI)
+        keep_cols = %w[type deleted_at discarded_at]
+
+        tables.keys.sort.first(30).each do |name|
           data = tables[name]
-          col_count = data[:columns]&.size || 0
-          pk = data[:primary_key] || "id"
-          lines << "- #{name} (#{col_count} cols, pk: #{pk})"
+          columns = data[:columns] || []
+          col_count = columns.size
+          pk = data[:primary_key]
+          pk_display = pk.is_a?(Array) ? pk.join(", ") : (pk || "id").to_s
+
+          key_cols = columns.map { |c| c[:name] }.select do |c|
+            next true if keep_cols.include?(c)
+            next true if c.end_with?("_type") # polymorphic associations
+            next false if skip_cols.include?(c)
+            next false if c.end_with?("_id")
+            true
+          end
+
+          col_sample = key_cols.first(12)
+          shown = col_sample.join(", ")
+          shown += ", ..." if key_cols.size > 12
+          col_names = col_sample.any? ? " — #{shown}" : ""
+          lines << "- #{name} (#{col_count} cols, pk: #{pk_display})#{col_names}"
+        end
+
+        if tables.size > 30
+          lines << "- ...#{tables.size - 30} more tables (use `rails_get_schema` MCP tool)"
         end
 
         lines.join("\n")
@@ -128,6 +152,29 @@ module RailsAiContext
           line += " (table: #{table})" if table
           line += " — #{assocs} assocs, #{vals} validations"
           lines << line
+        end
+
+        lines.join("\n")
+      end
+
+      def render_ui_patterns_reference
+        vt = context[:view_templates]
+        return nil unless vt.is_a?(Hash) && !vt[:error]
+        patterns = vt[:ui_patterns] || {}
+        return nil if patterns.empty?
+
+        lines = [
+          "# UI Patterns",
+          "",
+          "Common CSS class patterns found in this app's views.",
+          "Use these when creating new views to match the existing design.",
+          ""
+        ]
+
+        patterns.each do |type, classes_list|
+          classes_list.each do |classes|
+            lines << "- #{type.to_s.chomp('s').capitalize}: `#{classes}`"
+          end
         end
 
         lines.join("\n")
