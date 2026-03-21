@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-03-22
+
+### Security
+
+- **Sensitive file blocking** — `search_code` and `get_edit_context` now block access to `.env*`, `*.key`, `*.pem`, `config/master.key`, `config/credentials.yml.enc`. Configurable via `config.sensitive_patterns`.
+- **Credentials key names redacted** — Replaced `credentials_keys` (exposed names like `stripe_secret_key`) with `credentials_configured` boolean. No more information disclosure via JSON output or MCP resources.
+- **View content size cap** — `collect_all_view_content` capped at 5MB total / 500KB per file to prevent memory exhaustion.
+- **Schema file size limits** — 10MB limit on `schema.rb`/`structure.sql` parsing. Cached `schema.rb` reads to avoid re-reading per table.
+
+### Added
+
+- **Token optimization (~1,500-2,700 tokens/session saved)**:
+  - Filter framework filters (`verify_authenticity_token`, etc.) from controller output
+  - Filter framework/gem concerns (`Devise::*`, `Turbo::*`, `*::Generated*`) from models
+  - Combine duplicate PUT/PATCH routes into single `PATCH|PUT` entry
+  - Only show Nullable/Default columns when they have meaningful values
+  - Drop gem version numbers from default output
+  - Single HTML naming hint for Stimulus (not per-controller)
+  - Only show non-default middleware and initializers in config
+  - Group sibling controllers/routes with identical structure
+  - Compress repeated Tailwind classes in view full output
+  - Strip inline SVGs from view content
+  - Separate active vs lifecycle-only Stimulus controllers
+
+### Fixed
+
+- **Controller staleness** — Source-file parsing for actions/filters instead of Ruby reflection. Filesystem discovery for new controllers not yet loaded as classes.
+- **Schema `t.index` format** — Parse indexes inside `create_table` blocks (not just `add_index` outside).
+- **Stimulus nested values** — Brace-depth counting for single-line `{ active: { type: String, default: "overview" } }`.
+- **Stimulus phantom `type:Number`** — Exclude `type`/`default` as value names (JS keywords, not Stimulus values).
+- **Search context_lines** — Use `--field-context-separator=:` for ripgrep `-C` output compatibility.
+- **Schema defaults** — Supplement live DB nil defaults with values from `schema.rb`.
+- **Config missing data** — Added `queue_adapter` and `mailer` settings to config introspector and tool.
+- **View garbled fields** — Only extract from `@variable.field` patterns (not arbitrary method chains).
+- **View shared partials** — `controller:"shared"` now finds partials in `app/views/shared/`.
+- **View full detail** — Lists available controllers when no controller specified.
+- **Edit context hint** — "Also found" only shown for matches outside the context window.
+- **Model file structure** — Compressed to single-line format.
+- **Strong params body** — Action detail now shows the actual `permit(...)` call.
+- **AR-generated methods** — Filter `build_*`, `*_ids=`, etc. from model instance methods.
+
 ## [0.14.0] - 2026-03-20
 
 ### Fixed
