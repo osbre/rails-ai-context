@@ -58,7 +58,7 @@ module RailsAiContext
           lines << "## Models (#{models.size})"
           models.keys.sort.first(25).each do |name|
             data = models[name]
-            assocs = (data[:associations] || []).first(3).map { |a| "#{a[:type]} :#{a[:name]}" }.join(", ")
+            assocs = (data[:associations] || []).map { |a| "#{a[:type]} :#{a[:name]}" }.join(", ")
             line = "- **#{name}**"
             line += " — #{assocs}" unless assocs.empty?
             lines << line
@@ -73,9 +73,11 @@ module RailsAiContext
           arch = conv[:architecture] || []
           patterns = conv[:patterns] || []
           if arch.any? || patterns.any?
+            arch_labels = RailsAiContext::Tools::GetConventions::ARCH_LABELS rescue {}
+            pattern_labels = RailsAiContext::Tools::GetConventions::PATTERN_LABELS rescue {}
             lines << "## Architecture"
-            arch.each { |p| lines << "- #{p}" }
-            patterns.first(10).each { |p| lines << "- #{p}" }
+            arch.each { |p| lines << "- #{arch_labels[p] || p}" }
+            patterns.first(10).each { |p| lines << "- #{pattern_labels[p] || p}" }
             lines << ""
           end
         end
