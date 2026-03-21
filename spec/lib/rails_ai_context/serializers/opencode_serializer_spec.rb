@@ -57,6 +57,28 @@ RSpec.describe RailsAiContext::Serializers::OpencodeSerializer do
       end
     end
 
+    context "test command" do
+      before { RailsAiContext.configuration.context_mode = :compact }
+      after  { RailsAiContext.configuration.context_mode = :compact }
+
+      it "uses rails test for minitest projects" do
+        output = described_class.new(context.merge(tests: { framework: "minitest" })).call
+        expect(output).to include("rails test")
+        expect(output).not_to include("bundle exec rspec")
+      end
+
+      it "uses bundle exec rspec for rspec projects" do
+        output = described_class.new(context.merge(tests: { framework: "rspec" })).call
+        expect(output).to include("bundle exec rspec")
+        expect(output).not_to include("rails test")
+      end
+
+      it "defaults to rails test when framework is unknown" do
+        output = described_class.new(context.except(:tests)).call
+        expect(output).to include("rails test")
+      end
+    end
+
     context "in full mode" do
       before { RailsAiContext.configuration.context_mode = :full }
       after { RailsAiContext.configuration.context_mode = :compact }

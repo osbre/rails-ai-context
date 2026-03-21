@@ -78,4 +78,51 @@ RSpec.describe RailsAiContext::Serializers::ClaudeSerializer do
       expect(output).to include("Claude Code")
     end
   end
+
+  describe "test command" do
+    let(:base_context) do
+      {
+        app_name: "App", rails_version: "8.0", ruby_version: "3.4",
+        generated_at: Time.now.iso8601
+      }
+    end
+
+    context "compact mode" do
+      before { RailsAiContext.configuration.context_mode = :compact }
+      after  { RailsAiContext.configuration.context_mode = :compact }
+
+      it "uses rails test for minitest projects" do
+        output = described_class.new(base_context.merge(tests: { framework: "minitest" })).call
+        expect(output).to include("rails test")
+        expect(output).not_to include("bundle exec rspec")
+      end
+
+      it "uses bundle exec rspec for rspec projects" do
+        output = described_class.new(base_context.merge(tests: { framework: "rspec" })).call
+        expect(output).to include("bundle exec rspec")
+        expect(output).not_to include("rails test")
+      end
+
+      it "defaults to rails test when framework is unknown" do
+        output = described_class.new(base_context).call
+        expect(output).to include("rails test")
+      end
+    end
+
+    context "full mode" do
+      before { RailsAiContext.configuration.context_mode = :full }
+      after  { RailsAiContext.configuration.context_mode = :compact }
+
+      it "uses rails test for minitest projects" do
+        output = described_class.new(base_context.merge(tests: { framework: "minitest" })).call
+        expect(output).to include("rails test")
+        expect(output).not_to include("bundle exec rspec")
+      end
+
+      it "uses bundle exec rspec for rspec projects" do
+        output = described_class.new(base_context.merge(tests: { framework: "rspec" })).call
+        expect(output).to include("bundle exec rspec")
+      end
+    end
+  end
 end

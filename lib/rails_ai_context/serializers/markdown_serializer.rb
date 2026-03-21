@@ -500,6 +500,10 @@ module RailsAiContext
           _This context file is auto-generated. Run `rails ai:context` to regenerate._
         MD
       end
+
+      def test_command
+        context.dig(:tests, :framework) == "rspec" ? "bundle exec rspec" : "rails test"
+      end
     end
   end
 end

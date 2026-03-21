@@ -212,11 +212,15 @@ module RailsAiContext
         lines
       end
 
+      def test_command
+        context.dig(:tests, :framework) == "rspec" ? "bundle exec rspec" : "rails test"
+      end
+
       def render_commands
         [
           "## Commands",
           "- `bin/dev` — start dev server",
-          "- `bundle exec rspec` — run tests",
+          "- `#{test_command}` — run tests",
           "- `rails db:migrate` — run pending migrations",
           ""
         ]
@@ -260,7 +264,7 @@ module RailsAiContext
         rules << "- Use the database schema as the source of truth for column names and types"
         rules << "- Respect existing associations and validations when modifying models"
         rules << "- Match the project's architecture style (#{architecture_summary})" if architecture_summary
-        rules << "- Run `bundle exec rspec` after making changes to verify correctness"
+        rules << "- Run `#{test_command}` after making changes to verify correctness"
         rules << ""
         rules << super
         rules.join("\n")
@@ -269,6 +273,10 @@ module RailsAiContext
       def architecture_summary
         arch = context.dig(:conventions, :architecture)
         arch&.any? ? arch.join(", ") : nil
+      end
+
+      def test_command
+        context.dig(:tests, :framework) == "rspec" ? "bundle exec rspec" : "rails test"
       end
     end
   end
