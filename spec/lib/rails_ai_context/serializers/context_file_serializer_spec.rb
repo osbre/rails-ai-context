@@ -126,7 +126,7 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
       end
     end
 
-    it "appends marked section to file without markers" do
+    it "prepends marked section to file without markers" do
       Dir.mktmpdir do |dir|
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         filepath = File.join(dir, "CLAUDE.md")
@@ -134,9 +134,13 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
 
         described_class.new(context, format: :claude).call
         content = File.read(filepath)
-        expect(content).to start_with("# My hand-written CLAUDE.md")
-        expect(content).to include("<!-- BEGIN rails-ai-context -->")
+        expect(content).to start_with("<!-- BEGIN rails-ai-context -->")
+        expect(content).to include("# My hand-written CLAUDE.md")
         expect(content).to include("<!-- END rails-ai-context -->")
+        # Our section comes first, user content after
+        marker_pos = content.index("<!-- END rails-ai-context -->")
+        user_pos = content.index("# My hand-written CLAUDE.md")
+        expect(marker_pos).to be < user_pos
       end
     end
 

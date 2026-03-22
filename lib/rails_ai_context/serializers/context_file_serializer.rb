@@ -107,8 +107,8 @@ module RailsAiContext
               marked_content
             )
           else
-            # File exists without markers — append marked section
-            "#{existing.chomp}\n\n#{marked_content}"
+            # File exists without markers — prepend our section so AI reads it first
+            "#{marked_content}\n#{existing}"
           end
 
           if new_content == existing
