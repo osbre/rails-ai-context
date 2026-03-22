@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.15.3] - 2026-03-22
 
 ### Fixed
 
 - **Schema `add_index` column parsing** — option keys (e.g. `unique`, `name`) were being picked up as column names (PR #12).
-- **Windsurf test command** — extracted `TestCommandDetection` shared module to fix test framework detection in Windsurf serializer.
+- **Windsurf test command** — extracted `TestCommandDetection` shared module; Windsurf now shows specific test command instead of generic "Run tests after changes".
+
+### Changed
+
+- **Documentation** — updated all docs (README, CLAUDE.md, GUIDE.md, SECURITY.md, CHANGELOG, server.json, install generator) to match v0.15.x codebase. Fixed spec counts, file counts, preset counts, config options, and supported versions.
 
 ## [0.15.2] - 2026-03-22
 
