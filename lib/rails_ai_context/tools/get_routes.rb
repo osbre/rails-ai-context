@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetRoutes < BaseTool
       tool_name "rails_get_routes"
-      description "Get all routes for the Rails app, optionally filtered by controller. Shows HTTP verb, path, controller#action, and route name. Supports detail levels and pagination."
+      description "Get routing table: HTTP verbs, paths, controller#action, route names. " \
+        "Use when: building links/redirects, checking available endpoints, verifying route helpers exist. " \
+        "Filter with controller:\"users\", use detail:\"summary\" for counts or detail:\"full\" for route names."
 
       input_schema(
         properties: {

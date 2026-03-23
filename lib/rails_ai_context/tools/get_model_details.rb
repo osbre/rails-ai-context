@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetModelDetails < BaseTool
       tool_name "rails_get_model_details"
-      description "Get detailed information about a specific ActiveRecord model including associations, validations, scopes, enums, callbacks, and concerns. If no model specified, lists all available models with configurable detail level."
+      description "Get ActiveRecord model details: associations, validations, scopes, enums, callbacks, concerns. " \
+        "Use when: understanding model relationships, adding validations, checking existing scopes/callbacks. " \
+        "Specify model:\"User\" for full detail, or omit for a list. detail:\"full\" shows association lists."
 
       input_schema(
         properties: {

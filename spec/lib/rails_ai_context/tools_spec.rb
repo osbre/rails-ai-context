@@ -28,7 +28,7 @@ RSpec.describe "MCP Tool Integration" do
     let(:server) { RailsAiContext::Server.new(Rails.application).build }
 
     it "builds with all tools registered" do
-      expect(server.tools.size).to eq(13)
+      expect(server.tools.size).to eq(14)
       expect(server.tools.keys).to contain_exactly(
         "rails_get_schema",
         "rails_get_routes",
@@ -42,7 +42,8 @@ RSpec.describe "MCP Tool Integration" do
         "rails_get_view",
         "rails_get_stimulus",
         "rails_get_edit_context",
-        "rails_validate"
+        "rails_validate",
+        "rails_analyze_feature"
       )
     end
 
@@ -59,6 +60,38 @@ RSpec.describe "MCP Tool Integration" do
         "rails://migrations",
         "rails://engines"
       )
+    end
+  end
+
+  describe "custom_tools" do
+    let(:fake_tool) do
+      Class.new(MCP::Tool) do
+        tool_name "my_custom_tool"
+        description "A custom tool for testing"
+        input_schema(properties: {})
+        annotations(read_only_hint: true, destructive_hint: false)
+
+        def self.call(server_context: nil)
+          MCP::Tool::Response.new([ { type: "text", text: "hello" } ])
+        end
+      end
+    end
+
+    it "includes custom tools in the MCP server" do
+      RailsAiContext.configuration.custom_tools = [ fake_tool ]
+
+      server = RailsAiContext::Server.new(Rails.application).build
+
+      expect(server.tools.keys).to include("my_custom_tool")
+      expect(server.tools.size).to eq(15)
+    ensure
+      RailsAiContext.configuration.custom_tools = []
+    end
+
+    it "defaults to no custom tools" do
+      server = RailsAiContext::Server.new(Rails.application).build
+
+      expect(server.tools.size).to eq(14)
     end
   end
 

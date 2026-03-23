@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetConventions < BaseTool
       tool_name "rails_get_conventions"
-      description "Detect architectural patterns and conventions used in this Rails app. Returns info about architecture style (API-only, Hotwire, GraphQL), design patterns (service objects, STI, polymorphism), directory structure, and config files present."
+      description "Detect app architecture and conventions: API-only vs Hotwire, design patterns, directory layout. " \
+        "Use when: starting work on an unfamiliar codebase, choosing implementation patterns, or checking what frameworks are in use. " \
+        "No parameters needed. Returns architecture style, detected patterns (STI, service objects), and notable config files."
 
       input_schema(properties: {})
 

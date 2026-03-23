@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetConfig < BaseTool
       tool_name "rails_get_config"
-      description "Get Rails application configuration including cache store, session store, timezone, middleware stack, and initializers."
+      description "Get Rails app configuration: cache store, session store, timezone, queue adapter, custom middleware, initializers. " \
+        "Use when: configuring caching, checking session/queue setup, or seeing what initializers exist. " \
+        "No parameters needed. Returns only non-default middleware and notable initializers."
 
       input_schema(properties: {})
 

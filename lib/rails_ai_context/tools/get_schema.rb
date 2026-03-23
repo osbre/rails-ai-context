@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetSchema < BaseTool
       tool_name "rails_get_schema"
-      description "Get the database schema for the Rails app including tables, columns, indexes, and foreign keys. Optionally filter by table name. Supports detail levels and pagination for large schemas."
+      description "Get database schema: tables, columns, types, indexes, foreign keys. " \
+        "Use when: writing migrations, checking column types/constraints, understanding table relationships. " \
+        "Filter to one table with table:\"users\", control detail with detail:\"summary\"|\"standard\"|\"full\"."
 
       input_schema(
         properties: {

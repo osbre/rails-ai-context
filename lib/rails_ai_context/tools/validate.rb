@@ -8,11 +8,9 @@ module RailsAiContext
   module Tools
     class Validate < BaseTool
       tool_name "rails_validate"
-      description "Validate syntax of multiple files at once (Ruby, ERB, JavaScript). " \
-        "Replaces separate ruby -c, erb check, and node -c calls. " \
-        "Use level:\"rails\" for semantic checks: partial existence, route helpers, " \
-        "column references, strong params vs schema, callback method existence, " \
-        "route-action consistency, has_many dependent, FK indexes, Stimulus controllers."
+      description "Validate syntax and semantics of Ruby, ERB, and JavaScript files in a single call. " \
+        "Use when: after editing files, before committing, to catch syntax errors and Rails-specific issues. " \
+        "Pass files:[\"app/models/user.rb\"], use level:\"rails\" for semantic checks (missing partials, bad column refs, orphaned routes)."
 
       def self.max_files
         RailsAiContext.configuration.max_validate_files

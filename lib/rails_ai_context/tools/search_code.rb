@@ -6,7 +6,9 @@ module RailsAiContext
   module Tools
     class SearchCode < BaseTool
       tool_name "rails_search_code"
-      description "Search the Rails codebase for a pattern using ripgrep (rg) or Ruby fallback. Returns matching lines with file paths and line numbers. Useful for finding usages, implementations, and patterns."
+      description "Search the Rails codebase by regex pattern, returning matching lines with file paths and line numbers. " \
+        "Use when: finding where a method is called, locating class definitions, or tracing how a feature is implemented. " \
+        "Requires pattern:\"def activate\". Narrow with path:\"app/models\" and file_type:\"rb\"."
 
       def self.max_results_cap
         RailsAiContext.configuration.max_search_results

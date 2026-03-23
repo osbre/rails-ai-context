@@ -69,6 +69,9 @@ module RailsAiContext
     attr_accessor :max_search_results     # Max search results per call (default: 100)
     attr_accessor :max_validate_files     # Max files per validate call (default: 20)
 
+    # Additional MCP tool classes to register alongside built-in tools
+    attr_accessor :custom_tools
+
     # Filtering — customize what's hidden from AI output
     attr_accessor :excluded_controllers   # Controller classes hidden from listings (e.g. DeviseController)
     attr_accessor :excluded_route_prefixes # Route controller prefixes hidden with app_only (e.g. action_mailbox/)
@@ -140,6 +143,7 @@ module RailsAiContext
         ActiveRecord::Migration::CheckPending ActionDispatch::HostAuthorization
         Rack::MethodOverride ActionDispatch::Session::AbstractSecureStore
       ]
+      @custom_tools             = []
       @search_extensions        = %w[rb js erb yml yaml json ts tsx vue svelte haml slim]
       @concern_paths            = %w[app/models/concerns app/controllers/concerns]
     end

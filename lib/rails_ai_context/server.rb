@@ -21,7 +21,8 @@ module RailsAiContext
       Tools::GetView,
       Tools::GetStimulus,
       Tools::GetEditContext,
-      Tools::Validate
+      Tools::Validate,
+      Tools::AnalyzeFeature
     ].freeze
 
     def initialize(app, transport: :stdio)
@@ -36,7 +37,7 @@ module RailsAiContext
       server = MCP::Server.new(
         name: config.server_name,
         version: config.server_version,
-        tools: TOOLS
+        tools: TOOLS + config.custom_tools
       )
 
       Resources.register(server)

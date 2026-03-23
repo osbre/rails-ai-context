@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetEditContext < BaseTool
       tool_name "rails_get_edit_context"
-      description "Get just enough context to make a surgical Edit to a file. Returns the target area with line numbers and surrounding code. Purpose-built to replace Read + Edit workflow with a single call."
+      description "Get targeted code context for surgical edits: returns matching lines with surrounding code and line numbers. " \
+        "Use when: you need to edit a specific method or section without reading the entire file. " \
+        "Requires file:\"app/models/user.rb\" and near:\"def activate\" to locate the code region."
 
       def self.max_file_size
         RailsAiContext.configuration.max_file_size

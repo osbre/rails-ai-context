@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetStimulus < BaseTool
       tool_name "rails_get_stimulus"
-      description "Get Stimulus controller information including targets, values, actions, outlets, and classes. Filter by controller name."
+      description "Get Stimulus controllers: targets, values, actions, outlets, classes. " \
+        "Use when: wiring up data-controller attributes in views, adding targets/values, or checking existing Stimulus behavior. " \
+        "Filter with controller:\"filter-form\" for one controller's full API, or list all with detail:\"summary\"."
 
       input_schema(
         properties: {

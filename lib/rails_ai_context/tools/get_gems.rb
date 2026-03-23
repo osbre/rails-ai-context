@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetGems < BaseTool
       tool_name "rails_get_gems"
-      description "Analyze the app's Gemfile.lock to identify notable gems, their categories (auth, jobs, frontend, API, database, testing, deploy), and what they mean for the app's architecture."
+      description "Get notable gems from Gemfile.lock grouped by category: auth, jobs, frontend, API, database, testing, deploy. " \
+        "Use when: checking what libraries are available before adding a dependency, or understanding the tech stack. " \
+        "Filter with category:\"auth\" or category:\"database\". Omit for all categories."
 
       input_schema(
         properties: {

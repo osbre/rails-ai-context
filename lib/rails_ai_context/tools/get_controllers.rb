@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetControllers < BaseTool
       tool_name "rails_get_controllers"
-      description "Get controller information including actions, filters, strong params, and concerns. Optionally filter by controller name. Supports detail levels."
+      description "Get controller details: actions, before_action filters, strong params, and parent class. " \
+        "Use when: adding/modifying controller actions, checking what filters apply, or reading action source code. " \
+        "Filter with controller:\"PostsController\", drill into action:\"create\" for source code with line numbers."
 
       input_schema(
         properties: {

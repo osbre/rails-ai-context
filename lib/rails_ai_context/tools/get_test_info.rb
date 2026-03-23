@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetTestInfo < BaseTool
       tool_name "rails_get_test_info"
-      description "Get test infrastructure: framework, factories/fixtures with names, CI config, coverage, test file counts, and helper setup. Filter by model or controller to see existing tests."
+      description "Get test infrastructure and existing test files: framework, factories, fixtures, CI config, coverage setup. " \
+        "Use when: writing new tests, checking what factories/fixtures exist, or finding the test file for a model/controller. " \
+        "Use model:\"User\" or controller:\"Cooks\" to see existing tests. detail:\"full\" lists factory and fixture names."
 
       input_schema(
         properties: {

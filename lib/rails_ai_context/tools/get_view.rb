@@ -4,7 +4,9 @@ module RailsAiContext
   module Tools
     class GetView < BaseTool
       tool_name "rails_get_view"
-      description "Get view template contents, partials, and Stimulus controller references. Filter by controller or specific path. Saves tokens vs reading raw ERB files."
+      description "Get view templates, partials, and their Stimulus/partial references. " \
+        "Use when: editing ERB views, checking which partials a page renders, or finding Stimulus controller usage. " \
+        "Filter with controller:\"cooks\" for all views, or path:\"cooks/index.html.erb\" for one file's content."
 
       input_schema(
         properties: {
