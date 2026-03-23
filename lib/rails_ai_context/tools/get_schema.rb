@@ -149,7 +149,11 @@ module RailsAiContext
           nullable = col.key?(:null) ? (col[:null] ? "yes" : "**NO**") : "yes"
           col_type = col[:array] ? "#{col[:type]}[]" : col[:type].to_s
           line = "| #{col[:name]} | #{col_type} | #{nullable}"
-          line += " | #{col[:default]}" if has_defaults
+          if has_defaults
+            default_val = col[:default]
+            display_default = default_val == "" ? '""' : default_val
+            line += " | #{display_default}"
+          end
           lines << "#{line} |"
         end
 

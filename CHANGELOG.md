@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-03-23
+
+### Fixed
+
+- **New models now discovered via filesystem fallback** — when `ActiveRecord::Base.descendants` misses a newly created model, the introspector scans `app/models/*.rb` and constantizes them. Fixes model invisibility until MCP restart.
+- **Devise meta-methods no longer fill class/instance method caps** — filtered 40+ Devise-generated methods (authentication_keys=, email_regexp=, password_required?, etc.). Source-defined methods now prioritized over reflection-discovered ones.
+- **Controller `unless:`/`if:` conditions now extracted** — filters like `before_action :authenticate_user!, unless: :devise_controller?` now show the condition. Previously silently dropped.
+- **Empty string defaults shown as `""`** — schema tool now renders `""` instead of a blank cell for empty string defaults. AI can distinguish "no default" from "empty string default".
+- **Implicit belongs_to validations labeled** — `presence on user` from `belongs_to :user` now shows `_(implicit from belongs_to)_` and filters phantom `(message: required)` options.
+- **Array columns shown as `type[]`** in generated rules — `string` columns with `array: true` now render as `string[]` in schema rules.
+- **External ID columns no longer hidden** — columns like `paymongo_checkout_id` and `stripe_payment_id` are now shown in schema rules. Only conventional Rails FK columns (matching a table name) are filtered.
+- **Column defaults shown in generated rules** — columns with non-nil defaults now show `(=value)` inline.
+- **`analyze_feature` matches models by table name and underscore form** — `feature:"share"` now finds `CookShare` (via `cook_shares` table and `cook_share` underscore form), not just exact model name substring.
+
 ## [1.2.0] - 2026-03-23
 
 ### Added

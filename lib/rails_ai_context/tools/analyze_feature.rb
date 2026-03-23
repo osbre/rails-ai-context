@@ -27,7 +27,13 @@ module RailsAiContext
 
         # --- Models ---
         models = ctx[:models] || {}
-        matched_models = models.select { |name, data| !data[:error] && name.downcase.include?(pattern) }
+        matched_models = models.select do |name, data|
+          next false if data[:error]
+          # Match on model name, table name, or underscore form
+          name.downcase.include?(pattern) ||
+            data[:table_name]&.downcase&.include?(pattern) ||
+            name.underscore.include?(pattern)
+        end
 
         if matched_models.any?
           lines << "## Models (#{matched_models.size} matched)"

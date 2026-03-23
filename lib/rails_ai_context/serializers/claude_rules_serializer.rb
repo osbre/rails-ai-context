@@ -128,15 +128,31 @@ module RailsAiContext
           pk_display = pk.is_a?(Array) ? pk.join(", ") : (pk || "id").to_s
 
           # Show column names WITH types for key columns
+          # Skip standard Rails FK columns (like user_id, account_id) but keep
+          # external ID columns (like paymongo_checkout_id, stripe_payment_id)
+          fk_columns = (data[:foreign_keys] || []).map { |f| f[:column] }.to_set
+          all_table_names = tables.keys.to_set
           key_cols = columns.select do |c|
             next true if keep_cols.include?(c[:name])
             next true if c[:name].end_with?("_type")
             next false if skip_cols.include?(c[:name])
-            next false if c[:name].end_with?("_id")
+            if c[:name].end_with?("_id")
+              # Skip if it's a known FK or matches a table name (conventional Rails FK)
+              ref_table = c[:name].sub(/_id\z/, "").pluralize
+              next false if fk_columns.include?(c[:name]) || all_table_names.include?(ref_table)
+            end
             true
           end
 
-          col_sample = key_cols.map { |c| "#{c[:name]}:#{c[:type]}" }
+          col_sample = key_cols.map do |c|
+            col_type = c[:array] ? "#{c[:type]}[]" : c[:type].to_s
+            entry = "#{c[:name]}:#{col_type}"
+            if c.key?(:default) && !c[:default].nil?
+              default_display = c[:default] == "" ? '""' : c[:default]
+              entry += "(=#{default_display})"
+            end
+            entry
+          end
           col_str = col_sample.any? ? " — #{col_sample.join(', ')}" : ""
 
           # Foreign keys

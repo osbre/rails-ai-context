@@ -47,11 +47,33 @@ module RailsAiContext
       def discover_models
         return [] unless defined?(ActiveRecord::Base)
 
-        ActiveRecord::Base.descendants.reject do |model|
+        models = ActiveRecord::Base.descendants.reject do |model|
           model.abstract_class? ||
             model.name.nil? ||
             config.excluded_models.include?(model.name)
-        end.sort_by(&:name)
+        end
+
+        # Filesystem fallback — discover model files not yet loaded by descendants
+        models_dir = File.join(app.root.to_s, "app", "models")
+        if Dir.exist?(models_dir)
+          known = models.map(&:name).to_set
+          Dir.glob(File.join(models_dir, "**", "*.rb")).each do |path|
+            relative = path.sub("#{models_dir}/", "").sub(/\.rb\z/, "")
+            class_name = relative.camelize
+            next if known.include?(class_name)
+            next if config.excluded_models.include?(class_name)
+
+            begin
+              klass = class_name.constantize
+              next unless klass < ActiveRecord::Base && !klass.abstract_class?
+              models << klass
+            rescue NameError, LoadError
+              # Not a valid model class
+            end
+          end
+        end
+
+        models.uniq.sort_by(&:name)
       end
 
       def extract_model_details(model)
@@ -196,29 +218,116 @@ module RailsAiContext
         RailsAiContext.configuration.excluded_concerns.any? { |pattern| name.match?(pattern) }
       end
 
+      DEVISE_CLASS_METHOD_PATTERNS = %w[
+        authentication_keys= case_insensitive_keys= strip_whitespace_keys=
+        reset_password_keys= confirmation_keys= unlock_keys=
+        email_regexp= password_length= timeout_in= remember_for=
+        sign_in_after_reset_password= sign_in_after_change_password=
+        reconfirmable= extend_remember_period= pepper=
+        stretches= allow_unconfirmed_access_for=
+        confirm_within= remember_for= unlock_in=
+        lock_strategy= unlock_strategy= maximum_attempts=
+        paranoid= last_attempt_warning=
+      ].to_set.freeze
+
       def extract_public_class_methods(model)
         scope_names = extract_scopes(model).map(&:to_s)
-        (model.methods - ActiveRecord::Base.methods - Object.methods)
+
+        # Prioritize methods defined in the model's own source file
+        source_methods = extract_source_class_methods(model)
+
+        all_methods = (model.methods - ActiveRecord::Base.methods - Object.methods)
           .reject { |m|
             ms = m.to_s
-            ms.start_with?("_", "autosave") || scope_names.include?(ms)
+            ms.start_with?("_", "autosave") ||
+              scope_names.include?(ms) ||
+              DEVISE_CLASS_METHOD_PATTERNS.include?(ms) ||
+              ms.end_with?("=") && ms.length > 20 # Devise setter-like methods
           }
-          .sort
-          .first(30) # Cap to avoid noise
           .map(&:to_s)
+          .sort
+
+        # Source-defined methods first, then reflection-discovered ones
+        ordered = source_methods + (all_methods - source_methods)
+        ordered.first(30)
       end
+
+      def extract_source_class_methods(model)
+        path = model_source_path(model)
+        return [] unless path && File.exist?(path)
+
+        source = File.read(path)
+        methods = []
+        in_class_methods = false
+        source.each_line do |line|
+          in_class_methods = true if line.match?(/\A\s*(?:class << self|def self\.)/)
+          if line.match?(/\A\s*def self\.(\w+)/)
+            methods << line.match(/def self\.(\w+)/)[1]
+          end
+          if in_class_methods && line.match?(/\A\s*def (\w+)/)
+            methods << line.match(/def (\w+)/)[1]
+          end
+          in_class_methods = false if in_class_methods && line.match?(/\A\s*end\s*$/) && !line.match?(/def/)
+        end
+        methods.uniq
+      rescue
+        []
+      end
+
+      DEVISE_INSTANCE_PATTERNS = %w[
+        password_required? email_required? confirmation_required?
+        active_for_authentication? inactive_message authenticatable_salt
+        after_database_authentication send_devise_notification
+        send_confirmation_instructions send_reset_password_instructions
+        send_unlock_instructions send_on_create_confirmation_instructions
+        devise_mailer clean_up_passwords skip_confirmation!
+        skip_reconfirmation! valid_password? update_with_password
+        destroy_with_password remember_me! forget_me!
+        unauthenticated_message confirmation_period_valid?
+        pending_reconfirmation? reconfirmation_required?
+        send_email_changed_notification send_password_change_notification
+      ].to_set.freeze
 
       def extract_public_instance_methods(model)
         generated = generated_association_methods(model)
 
-        (model.instance_methods - ActiveRecord::Base.instance_methods - Object.instance_methods)
+        # Prioritize source-defined methods
+        source_methods = extract_source_instance_methods(model)
+
+        all_methods = (model.instance_methods - ActiveRecord::Base.instance_methods - Object.instance_methods)
           .reject { |m|
             ms = m.to_s
-            ms.start_with?("_", "autosave", "validate_associated") || generated.include?(ms)
+            ms.start_with?("_", "autosave", "validate_associated") ||
+              generated.include?(ms) ||
+              DEVISE_INSTANCE_PATTERNS.include?(ms) ||
+              ms.match?(/\Awill_save_change_to_|_before_last_save\z|_in_database\z|_before_type_cast\z/)
           }
-          .sort
-          .first(30)
           .map(&:to_s)
+          .sort
+
+        # Source-defined methods first
+        ordered = source_methods + (all_methods - source_methods)
+        ordered.first(30)
+      end
+
+      def extract_source_instance_methods(model)
+        path = model_source_path(model)
+        return [] unless path && File.exist?(path)
+
+        source = File.read(path)
+        methods = []
+        in_private = false
+        source.each_line do |line|
+          in_private = true if line.match?(/\A\s*private\s*$/)
+          next if in_private
+          next if line.match?(/\A\s*def self\./)
+          if (match = line.match(/\A\s*def (\w+[?!]?)/))
+            methods << match[1] unless match[1] == "initialize"
+          end
+        end
+        methods.uniq
+      rescue
+        []
       end
 
       # Build list of AR-generated association helper method names to exclude

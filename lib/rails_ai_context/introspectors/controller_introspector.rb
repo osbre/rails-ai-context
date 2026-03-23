@@ -167,6 +167,8 @@ module RailsAiContext
               if (sc = source_constraints[f[:name]])
                 f[:only] = sc[:only] if sc[:only]&.any?
                 f[:except] = sc[:except] if sc[:except]&.any?
+                f[:unless] = sc[:unless] if sc[:unless]
+                f[:if] = sc[:if] if sc[:if]
               end
             end
             return reflection_filters
@@ -221,6 +223,15 @@ module RailsAiContext
           except = parse_action_constraint(line, "except")
           filter[:only] = only if only&.any?
           filter[:except] = except if except&.any?
+
+          # Extract conditional modifiers (unless:, if:)
+          if (unless_match = line.match(/unless:\s*:(\w+[?!]?)/))
+            filter[:unless] = unless_match[1]
+          end
+          if (if_match = line.match(/\bif:\s*:(\w+[?!]?)/))
+            filter[:if] = if_match[1]
+          end
+
           filters << filter
         end
         filters
