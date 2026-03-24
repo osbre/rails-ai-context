@@ -156,10 +156,16 @@ module RailsAiContext
                   count += 1
                   next if count <= offset
                   break if count > offset + limit
-                  name_part = r[:name] ? " `#{r[:name]}`" : ""
                   params = r[:path].scan(/:(\w+)/).flatten
                   params_part = params.any? ? " [#{params.join(', ')}]" : ""
-                  ctrl_lines << "- `#{r[:verb]}` `#{r[:path]}` → #{r[:action]}#{name_part}#{params_part}"
+                  # Code-ready helper: cook_path(@cook) format
+                  helper_part = if r[:name]
+                    args = params.any? ? "(#{params.map { |p| p == 'id' ? '@record' : ":#{p}" }.join(', ')})" : ""
+                    " `#{r[:name]}_path#{args}`"
+                  else
+                    ""
+                  end
+                  ctrl_lines << "- `#{r[:verb]}` `#{r[:path]}` → #{r[:action]}#{helper_part}#{params_part}"
                 end
                 if ctrl_lines.any?
                   lines << "## #{ctrl}"

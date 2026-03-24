@@ -267,6 +267,37 @@ module RailsAiContext
         []
       end
 
+      # Detect before_action filters from parent controller source file
+      private_class_method def self.detect_parent_filters(parent_class)
+        return [] unless parent_class
+
+        # Try introspector data first
+        controllers = cached_context.dig(:controllers, :controllers) || {}
+        parent_data = controllers[parent_class]
+        if parent_data
+          return (parent_data[:filters] || []).select { |f| f[:kind] == "before" && !f[:only]&.any? && !f[:except]&.any? }
+        end
+
+        # Fallback: read ApplicationController source directly
+        path = Rails.root.join("app", "controllers", "#{parent_class.underscore}.rb")
+        return [] unless File.exist?(path)
+        return [] if File.size(path) > RailsAiContext.configuration.max_file_size
+
+        source = File.read(path, encoding: "UTF-8") rescue nil
+        return [] unless source
+
+        filters = []
+        source.each_line do |line|
+          if (m = line.match(/\A\s*before_action\s+:(\w+)/))
+            next if line.include?("only:") || line.include?("except:")
+            filters << { kind: "before", name: m[1] }
+          end
+        end
+        filters
+      rescue
+        []
+      end
+
       private_class_method def self.extract_method_with_lines(file_path, method_name)
         return nil unless File.exist?(file_path)
         return nil if File.size(file_path) > RailsAiContext.configuration.max_file_size
@@ -306,9 +337,15 @@ module RailsAiContext
           lines << info[:actions].map { |a| "- `#{a}`" }.join("\n")
         end
 
-        if info[:filters]&.any?
+        # Show full filter chain including inherited from parent controller
+        all_filters = info[:filters] || []
+        parent_filters = detect_parent_filters(info[:parent_class])
+        if parent_filters.any? || all_filters.any?
           lines << "" << "## Filters"
-          info[:filters].each do |f|
+          parent_filters.each do |f|
+            lines << "- `#{f[:kind]}` **#{f[:name]}** _(from #{info[:parent_class]})_"
+          end
+          all_filters.each do |f|
             detail = "- `#{f[:kind]}` **#{f[:name]}**"
             detail += " (only: #{f[:only].join(', ')})" if f[:only]&.any?
             lines << detail

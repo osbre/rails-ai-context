@@ -98,7 +98,10 @@ module RailsAiContext
             ctrl_templates.sort.each do |name, meta|
               parts = meta[:partials]&.any? ? " renders: #{meta[:partials].join(', ')}" : ""
               stim = meta[:stimulus]&.any? ? " stimulus: #{meta[:stimulus].join(', ')}" : ""
-              lines << "- #{name} (#{meta[:lines]} lines)#{parts}#{stim}"
+              extra = extract_view_metadata(name)
+              ivars = extra[:ivars]&.any? ? " ivars: #{extra[:ivars].join(', ')}" : ""
+              turbo = extra[:turbo]&.any? ? " turbo: #{extra[:turbo].join(', ')}" : ""
+              lines << "- #{name} (#{meta[:lines]} lines)#{parts}#{stim}#{ivars}#{turbo}"
             end
             ctrl_partials.sort.each do |name, meta|
               fields = meta[:fields]&.any? ? " fields: #{meta[:fields].join(', ')}" : ""
@@ -238,6 +241,29 @@ module RailsAiContext
         File.exist?(full_path) ? File.read(full_path) : "(file not found)"
       rescue
         "(error reading file)"
+      end
+
+      # Extract instance variables and Turbo wiring from a view template
+      private_class_method def self.extract_view_metadata(relative_path)
+        content = read_view_content(relative_path)
+        return { ivars: [], turbo: [] } if content.nil? || content.include?("(file not found)")
+
+        # Instance variables used in template
+        ivars = content.scan(/@(\w+)/).flatten.uniq.reject { |v| %w[output_buffer virtual_path _request].include?(v) }.sort
+
+        # Turbo Frame IDs and turbo_stream_from channels
+        turbo = []
+        content.scan(/turbo_frame_tag\s+["']([^"']+)["']/).each { |m| turbo << "frame:#{m[0]}" }
+        content.scan(/turbo_frame_tag\s+:(\w+)/).each { |m| turbo << "frame:#{m[0]}" }
+        content.scan(/turbo_stream_from\s+["']([^"']+)["']/).each { |m| turbo << "stream:#{m[0]}" }
+        content.scan(/turbo_stream_from\s+([^,\s]+)/).each do |m|
+          val = m[0].strip
+          turbo << "stream:#{val}" unless val.start_with?('"') || val.start_with?("'") || turbo.any? { |t| t.include?(val) }
+        end
+
+        { ivars: ivars, turbo: turbo.uniq }
+      rescue
+        { ivars: [], turbo: [] }
       end
 
       # Scan templates that render a partial to extract locals keys

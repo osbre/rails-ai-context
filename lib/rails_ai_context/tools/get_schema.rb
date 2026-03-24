@@ -121,14 +121,27 @@ module RailsAiContext
               end
             end
 
+            # Detect encrypted columns from model data
+            encrypted_cols = Set.new
+            model_refs = models_for_table(name)
+            models_data = cached_context[:models] || {}
+            model_refs.each do |model_name|
+              (models_data.dig(model_name, :encrypts) || []).each { |f| encrypted_cols.add(f) }
+            end
+
             cols = (data[:columns] || [])
               .reject { |c| timestamp_cols.include?(c[:name]) }
               .map do |c|
-                hint = if unique_cols.include?(c[:name]) then " [unique]"
-                elsif indexed_cols.include?(c[:name]) then " [indexed]"
-                else ""
+                hints = []
+                hints << "unique" if unique_cols.include?(c[:name])
+                hints << "indexed" if indexed_cols.include?(c[:name]) && !unique_cols.include?(c[:name])
+                hints << "encrypted" if encrypted_cols.include?(c[:name])
+                # Show default value if present
+                if c.key?(:default) && !c[:default].nil? && c[:default] != ""
+                  hints << "default: #{c[:default]}"
                 end
-                "#{c[:name]}:#{c[:type]}#{hint}"
+                hint_str = hints.any? ? " [#{hints.join(', ')}]" : ""
+                "#{c[:name]}:#{c[:type]}#{hint_str}"
               end.join(", ")
             lines << "### #{name}"
             lines << cols
