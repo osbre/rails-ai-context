@@ -122,8 +122,28 @@ module RailsAiContext
         lines << "- **Values:** #{ctrl[:values].map { |k, v| "#{k}:#{v}" }.join(', ')}" if ctrl[:values]&.any?
         lines << "- **Outlets:** #{ctrl[:outlets].join(', ')}" if ctrl[:outlets]&.any?
         lines << "- **Classes:** #{ctrl[:classes].join(', ')}" if ctrl[:classes]&.any?
+
+        # Detect lifecycle methods from source
+        lifecycle = detect_lifecycle(ctrl[:file])
+        lines << "- **Lifecycle:** #{lifecycle.join(', ')}" if lifecycle&.any?
+
         lines << "- **File:** #{ctrl[:file]}" if ctrl[:file]
         lines.join("\n")
+      end
+
+      private_class_method def self.detect_lifecycle(relative_path)
+        return nil unless relative_path
+        path = Rails.root.join("app/javascript/controllers", relative_path)
+        return nil unless File.exist?(path)
+
+        content = File.read(path) rescue nil
+        return nil unless content
+
+        methods = []
+        methods << "connect" if content.match?(/\bconnect\s*\(\s*\)/)
+        methods << "disconnect" if content.match?(/\bdisconnect\s*\(\s*\)/)
+        methods << "initialize" if content.match?(/\binitialize\s*\(\s*\)/)
+        methods
       end
     end
   end

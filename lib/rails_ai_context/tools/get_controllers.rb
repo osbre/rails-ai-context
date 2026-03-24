@@ -255,6 +255,7 @@ module RailsAiContext
         lines = [ "# #{name}", "" ]
         lines << "**Parent:** `#{info[:parent_class]}`" if info[:parent_class]
         lines << "**API controller:** yes" if info[:api_controller]
+        lines << "**Formats:** #{info[:respond_to_formats].join(', ')}" if info[:respond_to_formats]&.any?
 
         if info[:actions]&.any?
           lines << "" << "## Actions"

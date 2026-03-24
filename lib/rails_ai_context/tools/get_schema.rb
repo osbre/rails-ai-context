@@ -99,9 +99,25 @@ module RailsAiContext
           paginated.each do |name|
             data = tables[name]
             timestamp_cols = %w[id created_at updated_at]
+
+            # Build indexed/unique column sets for inline hints
+            indexed_cols = Set.new
+            unique_cols = Set.new
+            (data[:indexes] || []).each do |idx|
+              Array(idx[:columns]).each do |col|
+                idx[:unique] ? unique_cols.add(col) : indexed_cols.add(col)
+              end
+            end
+
             cols = (data[:columns] || [])
               .reject { |c| timestamp_cols.include?(c[:name]) }
-              .map { |c| "#{c[:name]}:#{c[:type]}" }.join(", ")
+              .map do |c|
+                hint = if unique_cols.include?(c[:name]) then " [unique]"
+                elsif indexed_cols.include?(c[:name]) then " [indexed]"
+                else ""
+                end
+                "#{c[:name]}:#{c[:type]}#{hint}"
+              end.join(", ")
             lines << "### #{name}"
             lines << cols
             lines << ""

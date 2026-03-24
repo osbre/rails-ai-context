@@ -103,7 +103,9 @@ module RailsAiContext
             ctrl_partials.sort.each do |name, meta|
               fields = meta[:fields]&.any? ? " fields: #{meta[:fields].join(', ')}" : ""
               helpers = meta[:helpers]&.any? ? " helpers: #{meta[:helpers].join(', ')}" : ""
-              lines << "- #{name} (#{meta[:lines]} lines)#{fields}#{helpers}"
+              locals = extract_partial_locals(name, templates)
+              locals_str = locals&.any? ? " **locals:** #{locals.join(', ')}" : ""
+              lines << "- #{name} (#{meta[:lines]} lines)#{fields}#{helpers}#{locals_str}"
             end
             lines << ""
           end
@@ -236,6 +238,26 @@ module RailsAiContext
         File.exist?(full_path) ? File.read(full_path) : "(file not found)"
       rescue
         "(error reading file)"
+      end
+
+      # Scan templates that render a partial to extract locals keys
+      private_class_method def self.extract_partial_locals(partial_name, templates)
+        # Get the partial's short name for matching render calls
+        base = File.basename(partial_name).sub(/\A_/, "").sub(/\..*/, "")
+        locals = Set.new
+
+        templates.each_value do |meta|
+          next unless meta[:partials]&.any? { |p| p.include?(base) }
+          content = read_view_content(meta[:path] || next)
+          # Match: render "partial", key: val OR render partial: "partial", locals: { key: val }
+          content.scan(/render\s+(?:partial:\s*)?["'][^"']*#{Regexp.escape(base)}["'][^%\n]*?(?:,|\blocals:\s*\{)\s*([^}%]+)/).each do |match|
+            match[0].scan(/(\w+):/) { |k| locals << k[0] }
+          end
+        end
+
+        locals.to_a.sort
+      rescue
+        []
       end
 
       private_class_method def self.read_from_disk(controller:, path:, detail:)

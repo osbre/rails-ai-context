@@ -40,7 +40,8 @@ RSpec.describe RailsAiContext::Introspectors::ModelIntrospector do
 
     it "extracts enums with values" do
       expect(result["User"][:enums]).to have_key("role")
-      expect(result["User"][:enums]["role"]).to contain_exactly("member", "admin")
+      expect(result["User"][:enums]["role"]).to be_a(Hash)
+      expect(result["User"][:enums]["role"].keys).to contain_exactly("member", "admin")
     end
 
     it "extracts table names" do

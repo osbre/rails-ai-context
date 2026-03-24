@@ -189,7 +189,13 @@ module RailsAiContext
         if data[:enums]&.any?
           lines << "" << "## Enums"
           data[:enums].each do |attr, values|
-            lines << "- `#{attr}`: #{values.join(', ')}"
+            if values.is_a?(Hash)
+              backing = values.values.first.is_a?(Integer) ? "integer" : "string"
+              entries = values.map { |k, v| "#{k}(#{v})" }.join(", ")
+              lines << "- `#{attr}`: #{entries} [#{backing}]"
+            else
+              lines << "- `#{attr}`: #{Array(values).join(', ')}"
+            end
           end
         end
 

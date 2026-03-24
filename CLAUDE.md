@@ -41,6 +41,8 @@ structure to AI assistants via the Model Context Protocol (MCP).
 15. **generate_root_files toggle** — when false, skip root files (CLAUDE.md, etc.), only generate split rules
 16. **custom_tools API** — `config.custom_tools` array lets users register additional MCP::Tool subclasses alongside the 16 built-in tools
 17. **Design system extraction** — view templates analyzed for canonical examples, color palette, typography, responsive patterns, interactive states, dark mode
+18. **skip_tools API** — `config.skip_tools` array lets users exclude specific built-in tools (e.g. `%w[rails_security_scan]`)
+19. **Security scanning** — optional Brakeman integration via `rails_security_scan` tool (graceful degradation if not installed)
 
 ## Testing
 

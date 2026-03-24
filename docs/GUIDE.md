@@ -564,8 +564,9 @@ Ripgrep-powered regex search across the codebase.
 | `pattern` | string | **Required.** Regex pattern to search for. |
 | `path` | string | Subdirectory to search in (e.g. `app/models`, `config`). Default: entire app. |
 | `file_type` | string | Filter by file type (e.g. `rb`, `erb`, `js`). Alphanumeric only. |
+| `match_type` | string | Filter matches: `any` (default), `definition` (only `def` lines), `class` (only `class`/`module` lines). |
 | `max_results` | integer | Max results to return. Default: 30, max: 100. |
-| `context_lines` | integer | Lines of context before and after each match (like grep -C). Default: 0, max: 5. |
+| `context_lines` | integer | Lines of context before and after each match (like grep -C). Default: 2, max: 5. |
 
 **Examples:**
 
@@ -582,8 +583,14 @@ rails_search_code(pattern: "def create", file_type: "rb", max_results: 50)
 rails_search_code(pattern: "current_user", path: "app/controllers")
   → Search only in app/controllers/
 
-rails_search_code(pattern: "validates", context_lines: 2)
-  → Matches with 2 lines of context before and after
+rails_search_code(pattern: "validates", context_lines: 3)
+  → Matches with 3 lines of context before and after (default is 2)
+
+rails_search_code(pattern: "activate", match_type: "definition")
+  → Only `def activate` / `def self.activate` lines (skips method calls)
+
+rails_search_code(pattern: "User", match_type: "class")
+  → Only `class User` / `module User` definitions
 ```
 
 **Security:** Uses `Open3.capture2` with array arguments (no shell injection). Validates file_type. Blocks path traversal. Respects `excluded_paths` and `sensitive_patterns` config.
@@ -840,6 +847,9 @@ RailsAiContext.configure do |config|
   # Additional MCP tool classes to register alongside built-in tools
   # config.custom_tools = [MyApp::Tools::CustomTool]
 
+  # Exclude specific built-in tools (e.g. if you don't use Brakeman)
+  # config.skip_tools = %w[rails_security_scan]
+
   # --- Exclusions ---
 
   # Models to skip during introspection
@@ -927,6 +937,7 @@ end
 | `max_tool_response_chars` | Integer | `120_000` | Safety cap for MCP tool responses |
 | `cache_ttl` | Integer | `30` | Cache TTL in seconds for introspection results |
 | `custom_tools` | Array | `[]` | Additional MCP tool classes to register alongside built-in tools |
+| `skip_tools` | Array | `[]` | Built-in tool names to exclude (e.g. `%w[rails_security_scan]`) |
 | `excluded_models` | Array | internal Rails models | Models to skip |
 | `excluded_paths` | Array | `node_modules tmp log vendor .git` | Paths excluded from code search |
 | `sensitive_patterns` | Array | `.env`, `.key`, `.pem`, credentials | File patterns blocked from search and read tools |

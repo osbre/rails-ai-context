@@ -39,6 +39,13 @@ module RailsAiContext
           end
         end
 
+        # Frontend stack from package.json
+        frontend = detect_frontend_stack
+        if frontend.any?
+          lines << "" << "## Frontend stack"
+          frontend.each { |f| lines << "- #{f}" }
+        end
+
         # Config files — only show non-obvious ones (skip files every Rails app has)
         if conventions[:config_files]&.any?
           obvious = %w[
@@ -91,6 +98,36 @@ module RailsAiContext
 
       private_class_method def self.humanize_pattern(key)
         PATTERN_LABELS[key] || key.humanize
+      end
+
+      private_class_method def self.detect_frontend_stack
+        pkg_path = Rails.root.join("package.json")
+        return [] unless File.exist?(pkg_path)
+
+        content = File.read(pkg_path) rescue ""
+        stack = []
+
+        # CSS frameworks
+        stack << "Tailwind CSS" if content.include?("tailwindcss")
+        stack << "Bootstrap" if content.include?("bootstrap")
+        stack << "DaisyUI" if content.include?("daisyui")
+
+        # JS bundlers
+        stack << "esbuild" if content.include?("esbuild")
+        stack << "Vite" if content.include?("vite")
+        stack << "Webpack" if content.include?("webpack")
+
+        # JS frameworks
+        stack << "React" if content.include?("\"react\"")
+        stack << "Vue" if content.include?("\"vue\"")
+        stack << "Svelte" if content.include?("svelte")
+
+        # Utilities
+        stack << "TypeScript" if content.include?("typescript")
+        stack << "Turbo" if content.include?("@hotwired/turbo")
+        stack << "Stimulus" if content.include?("@hotwired/stimulus")
+
+        stack
       end
     end
   end

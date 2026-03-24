@@ -152,9 +152,7 @@ module RailsAiContext
       def extract_enums(model)
         return {} unless model.respond_to?(:defined_enums)
 
-        model.defined_enums.transform_values do |mapping|
-          mapping.keys
-        end
+        model.defined_enums.transform_values { |mapping| mapping.dup }
       end
 
       def extract_callbacks(model)

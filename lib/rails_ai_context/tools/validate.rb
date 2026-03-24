@@ -97,6 +97,7 @@ module RailsAiContext
 
         output = results.join("\n")
         output += "\n\n#{passed}/#{total} files passed"
+        output += " _(Prism unavailable — using fallback parser, some semantic checks skipped)_" unless prism_available?
         text_response(output)
       end
 
@@ -423,7 +424,7 @@ module RailsAiContext
           next if ref.include?("@") || ref.include?("#") || ref.include?("{")
           possible = resolve_partial_paths(file, ref)
           unless possible.any? { |p| File.exist?(File.join(Rails.root, "app", "views", p)) }
-            warnings << "render \"#{ref}\" \u2014 partial not found"
+            warnings << "render \"#{ref}\" \u2014 partial not found (checked: #{possible.first(2).join(', ')})"
           end
         end
         warnings
@@ -436,7 +437,7 @@ module RailsAiContext
           next if ref.include?("@") || ref.include?("#") || ref.include?("{")
           possible = resolve_partial_paths(file, ref)
           unless possible.any? { |p| File.exist?(File.join(Rails.root, "app", "views", p)) }
-            warnings << "render \"#{ref}\" \u2014 partial not found"
+            warnings << "render \"#{ref}\" \u2014 partial not found (checked: #{possible.first(2).join(', ')})"
           end
         end
         warnings
@@ -530,7 +531,7 @@ module RailsAiContext
         visitor.validates_calls.each do |vc|
           vc[:columns].each do |col|
             unless valid[:columns].include?(col)
-              warnings << "validates :#{col} \u2014 column \"#{col}\" not found in #{valid[:table]} table"
+              warnings << "validates :#{col} \u2014 column \"#{col}\" not found in #{valid[:table]} table. Fix: add migration `rails g migration Add#{col.camelize}To#{valid[:table].camelize} #{col}:string` or check concerns"
             end
           end
         end
@@ -618,7 +619,7 @@ module RailsAiContext
           pc[:params].each do |param|
             next if param.end_with?("_attributes") # nested attributes
             next if valid.include?(param)
-            warnings << "permits :#{param} \u2014 not a column in #{table_name} table"
+            warnings << "permits :#{param} \u2014 not a column in #{table_name} table (check virtual attributes or add migration)"
           end
         end
         warnings
@@ -709,7 +710,7 @@ module RailsAiContext
           next unless assoc[:type] == "has_many"
           next if assoc[:through] # through associations don't need dependent
           next if assoc[:dependent] # already has dependent
-          warnings << "has_many :#{assoc[:name]} \u2014 missing :dependent option (orphaned records risk)"
+          warnings << "has_many :#{assoc[:name]} \u2014 missing :dependent option (orphaned records risk). Fix: add `dependent: :destroy` or `:nullify`"
         end
         warnings
       end
@@ -748,7 +749,7 @@ module RailsAiContext
 
         fk_columns.each do |col|
           unless indexed.include?(col)
-            warnings << "#{col} in #{table_name} \u2014 foreign key without index (slow queries)"
+            warnings << "#{col} in #{table_name} \u2014 foreign key without index (slow queries). Fix: `rails g migration AddIndexTo#{table_name.camelize} #{col}:index`"
           end
         end
         warnings

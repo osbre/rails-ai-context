@@ -34,13 +34,14 @@ module RailsAiContext
         discover_jobs(root, pattern, lines)
         discover_views(ctx, root, pattern, lines)
         discover_stimulus(ctx, pattern, lines)
-        discover_tests(root, pattern, lines)
+        test_files = discover_tests(root, pattern, lines)
         discover_related_models(ctx, matched_models, lines)
         discover_concerns(ctx, matched_models, lines)
         discover_callbacks(ctx, matched_models, lines)
         discover_channels(root, pattern, lines)
         discover_mailers(root, pattern, lines)
         discover_env_dependencies(root, pattern, matched_models, lines)
+        discover_test_gaps(root, pattern, matched_models, ctx, test_files || [], lines)
 
         text_response(lines.join("\n"))
       end
@@ -82,7 +83,10 @@ module RailsAiContext
               end
               lines << "**Scopes:** #{data[:scopes].join(', ')}" if data[:scopes].is_a?(Array) && data[:scopes].any?
               if data[:enums].is_a?(Hash) && data[:enums].any?
-                lines << "**Enums:** #{data[:enums].map { |k, v| "#{k}: #{Array(v).join(', ')}" }.join('; ')}"
+                enum_strs = data[:enums].map do |k, v|
+                  v.is_a?(Hash) ? "#{k}: #{v.keys.join(', ')}" : "#{k}: #{Array(v).join(', ')}"
+                end
+                lines << "**Enums:** #{enum_strs.join('; ')}"
               end
             end
           else
@@ -261,7 +265,7 @@ module RailsAiContext
             end
           end
           found.uniq!
-          return if found.empty?
+          return found if found.empty?
 
           lines << "## Tests (#{found.size})"
           found.each do |path|
@@ -270,6 +274,51 @@ module RailsAiContext
             test_count = source.scan(/\b(?:it|test|should)\b/).size
             lines << "- `#{relative}` (#{test_count} tests)"
           end
+          lines << ""
+          found
+        rescue
+          []
+        end
+
+        # --- Test coverage gaps ---
+        def discover_test_gaps(root, pattern, matched_models, ctx, test_files, lines)
+          gaps = []
+          test_basenames = test_files.map { |f| File.basename(f, ".rb") }
+
+          # Check models
+          matched_models&.each do |name, _data|
+            snake = name.underscore
+            unless test_basenames.any? { |t| t.include?(snake) }
+              gaps << "Model `#{name}` — no test file found"
+            end
+          end
+
+          # Check controllers
+          controllers = ctx[:controllers]&.dig(:controllers) || {}
+          controllers.each_key do |ctrl_name|
+            next unless ctrl_name.downcase.include?(pattern)
+            snake = ctrl_name.underscore.delete_suffix("_controller")
+            unless test_basenames.any? { |t| t.include?(snake) }
+              gaps << "Controller `#{ctrl_name}` — no test file found"
+            end
+          end
+
+          # Check jobs
+          job_dir = File.join(root, "app", "jobs")
+          if Dir.exist?(job_dir)
+            Dir.glob(File.join(job_dir, "**", "*.rb")).each do |path|
+              next unless File.basename(path, ".rb").include?(pattern)
+              snake = File.basename(path, ".rb")
+              unless test_basenames.any? { |t| t.include?(snake) }
+                gaps << "Job `#{snake}` — no test file found"
+              end
+            end
+          end
+
+          return if gaps.empty?
+
+          lines << "## Test Coverage Gaps"
+          gaps.each { |g| lines << "- #{g}" }
           lines << ""
         rescue
           nil

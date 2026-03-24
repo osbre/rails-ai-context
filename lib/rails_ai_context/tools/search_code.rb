@@ -28,13 +28,18 @@ module RailsAiContext
             type: "string",
             description: "Filter by file extension (e.g. 'rb', 'js', 'erb'). Default: all files."
           },
+          match_type: {
+            type: "string",
+            enum: %w[any definition class],
+            description: "Filter match type. any: all matches (default). definition: only `def method_name` lines. class: only `class/module Name` lines."
+          },
           max_results: {
             type: "integer",
             description: "Maximum number of results. Default: 30, max: 100."
           },
           context_lines: {
             type: "integer",
-            description: "Lines of context before and after each match (like grep -C). Default: 0, max: 5."
+            description: "Lines of context before and after each match (like grep -C). Default: 2, max: 5."
           }
         },
         required: [ "pattern" ]
@@ -42,12 +47,19 @@ module RailsAiContext
 
       annotations(read_only_hint: true, destructive_hint: false, idempotent_hint: true, open_world_hint: false)
 
-      def self.call(pattern:, path: nil, file_type: nil, max_results: 30, context_lines: 0, server_context: nil)
+      def self.call(pattern:, path: nil, file_type: nil, match_type: "any", max_results: 30, context_lines: 2, server_context: nil)
         root = Rails.root.to_s
 
         # Reject empty or whitespace-only patterns
         if pattern.nil? || pattern.strip.empty?
           return text_response("Pattern is required. Provide a search term or regex.")
+        end
+
+        # Apply match_type filter to pattern
+        pattern = case match_type
+        when "definition" then "^\\s*def\\s+(self\\.)?#{pattern}"
+        when "class" then "^\\s*(class|module)\\s+#{pattern}"
+        else pattern
         end
 
         # Validate regex syntax early

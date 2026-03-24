@@ -171,7 +171,7 @@ module RailsAiContext
           model_data = models[model_name]
           if model_data.is_a?(Hash) && model_data[:enums]&.any?
             model_data[:enums].each do |attr, values|
-              lines << "  #{attr}: #{values.join(', ')}"
+              lines << "  #{attr}: #{values.is_a?(Hash) ? values.keys.join(', ') : Array(values).join(', ')}"
             end
           end
         end
@@ -231,7 +231,7 @@ module RailsAiContext
           # Include enums so agents know valid values
           enums = data[:enums] || {}
           enums.each do |attr, values|
-            lines << "  #{attr}: #{values.join(', ')}"
+            lines << "  #{attr}: #{values.is_a?(Hash) ? values.keys.join(', ') : Array(values).join(', ')}"
           end
         end
 

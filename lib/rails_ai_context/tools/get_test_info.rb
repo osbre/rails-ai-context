@@ -94,7 +94,12 @@ module RailsAiContext
           if data[:factory_names]&.any?
             lines << "" << "## Factories"
             data[:factory_names].each do |file, names|
-              lines << "- **#{file}:** #{names.join(', ')}"
+              detail_str = parse_factory_details(file)
+              if detail_str
+                lines << detail_str
+              else
+                lines << "- **#{file}:** #{names.join(', ')}"
+              end
             end
           end
 
@@ -182,6 +187,40 @@ module RailsAiContext
         end
         hint = nearby.any? ? "\n\nFiles in test directory: #{nearby.join(', ')}" : ""
         "No test file found for #{name}. Searched: #{candidates.join(', ')}#{hint}"
+      end
+
+      # Parse factory file to extract attributes and traits
+      private_class_method def self.parse_factory_details(relative_path)
+        # Try common factory locations
+        candidates = [
+          Rails.root.join("spec/factories/#{relative_path}"),
+          Rails.root.join("test/factories/#{relative_path}"),
+          Rails.root.join("spec/factories", relative_path),
+          Rails.root.join("test/factories", relative_path)
+        ]
+        path = candidates.find { |p| File.exist?(p) }
+        return nil unless path
+        return nil if File.size(path) > max_test_file_size
+
+        content = File.read(path, encoding: "UTF-8", invalid: :replace, undef: :replace)
+        lines = []
+        current_factory = nil
+
+        content.each_line do |line|
+          if (match = line.match(/\A\s*factory\s+:(\w+)/))
+            current_factory = match[1]
+            lines << "- **#{relative_path}** → `:#{current_factory}`"
+          elsif current_factory && (match = line.match(/\A\s*trait\s+:(\w+)/))
+            lines << "  - trait `:#{match[1]}`"
+          elsif current_factory && line.match?(/\A\s+\w+\s*\{/)
+            attr = line.strip.sub(/\s*\{.*/, "")
+            lines << "  - `#{attr}`" unless attr.empty?
+          end
+        end
+
+        lines.any? ? lines.join("\n") : nil
+      rescue
+        nil
       end
     end
   end

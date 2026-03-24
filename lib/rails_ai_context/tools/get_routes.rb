@@ -157,7 +157,9 @@ module RailsAiContext
                   next if count <= offset
                   break if count > offset + limit
                   name_part = r[:name] ? " `#{r[:name]}`" : ""
-                  ctrl_lines << "- `#{r[:verb]}` `#{r[:path]}` → #{r[:action]}#{name_part}"
+                  params = r[:path].scan(/:(\w+)/).flatten
+                  params_part = params.any? ? " [#{params.join(', ')}]" : ""
+                  ctrl_lines << "- `#{r[:verb]}` `#{r[:path]}` → #{r[:action]}#{name_part}#{params_part}"
                 end
                 if ctrl_lines.any?
                   lines << "## #{ctrl}"

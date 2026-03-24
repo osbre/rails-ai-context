@@ -20,6 +20,26 @@ module RailsAiContext
 
       annotations(read_only_hint: true, destructive_hint: false, idempotent_hint: true, open_world_hint: false)
 
+      GEM_CONFIG_HINTS = {
+        "devise" => "config/initializers/devise.rb",
+        "pundit" => "app/policies/",
+        "cancancan" => "app/models/ability.rb",
+        "sidekiq" => "config/sidekiq.yml",
+        "solid_queue" => "config/solid_queue.yml",
+        "redis" => "config/initializers/redis.rb",
+        "stripe" => "config/initializers/stripe.rb",
+        "sentry-ruby" => "config/initializers/sentry.rb",
+        "rollbar" => "config/initializers/rollbar.rb",
+        "aws-sdk-s3" => "config/storage.yml",
+        "pg_search" => "app/models/ (include PgSearch::Model)",
+        "elasticsearch-rails" => "config/initializers/elasticsearch.rb",
+        "pagy" => "config/initializers/pagy.rb",
+        "kaminari" => "config/initializers/kaminari_config.rb",
+        "rack-cors" => "config/initializers/cors.rb",
+        "omniauth" => "config/initializers/omniauth.rb",
+        "paper_trail" => "app/models/ (has_paper_trail)"
+      }.freeze
+
       def self.call(category: "all", server_context: nil)
         gems = cached_context[:gems]
         return text_response("Gem introspection not available. Add :gems to introspectors.") unless gems
@@ -37,7 +57,10 @@ module RailsAiContext
               current_cat = g[:category]
               lines << "" << "## #{current_cat.capitalize}"
             end
-            lines << "- **#{g[:name]}**: #{g[:note]}"
+            config_hint = GEM_CONFIG_HINTS[g[:name]]
+            line = "- **#{g[:name]}**: #{g[:note]}"
+            line += " _(config: #{config_hint})_" if config_hint
+            lines << line
           end
         else
           all_cats = (gems[:notable_gems] || []).map { |g| g[:category] }.uniq.sort

@@ -103,20 +103,20 @@ The gem exposes **16 read-only tools** via MCP that AI clients call on-demand:
 
 | Tool | What it returns |
 |------|----------------|
-| `rails_get_schema` | Tables, columns, indexes, foreign keys |
-| `rails_get_model_details` | Associations, validations, scopes, enums, callbacks |
-| `rails_get_routes` | HTTP verbs, paths, controller actions |
-| `rails_get_controllers` | Actions, filters, strong params, concerns |
-| `rails_get_config` | Cache, session, timezone, middleware, initializers |
-| `rails_get_test_info` | Test framework, factories, CI config, coverage |
-| `rails_get_gems` | Notable gems categorized by function |
-| `rails_get_conventions` | Architecture patterns, directory structure |
-| `rails_search_code` | Ripgrep-powered regex search across the codebase |
-| `rails_get_view` | View templates, partials, Stimulus references |
-| `rails_get_stimulus` | Stimulus controllers — targets, values, actions, outlets |
-| `rails_get_edit_context` | Surgical edit helper — returns code around a match with line numbers |
-| `rails_validate` | Batch syntax validation for Ruby, ERB, and JavaScript files. `level:"rails"` adds semantic checks (partials, route helpers, columns, strong params, callbacks, FK indexes, Stimulus) |
-| `rails_analyze_feature` | Full-stack feature analysis — models, controllers, routes, services, jobs, views, Stimulus, tests, related models, env deps |
+| `rails_get_schema` | Tables, columns with `[indexed]`/`[unique]` hints, indexes, foreign keys |
+| `rails_get_model_details` | Associations with `dependent:`, validations, scopes, enums with backing type, callbacks |
+| `rails_get_routes` | HTTP verbs, paths with `[params]`, controller actions |
+| `rails_get_controllers` | Actions, filters, strong params, respond_to formats |
+| `rails_get_config` | Database adapter, auth framework, assets stack, cache, session, timezone, middleware |
+| `rails_get_test_info` | Test framework, factory attributes/traits, fixtures, CI config, coverage |
+| `rails_get_gems` | Notable gems categorized by function with config location hints |
+| `rails_get_conventions` | Architecture patterns, frontend stack, directory structure |
+| `rails_search_code` | Ripgrep search with 2-line context default, `match_type:"definition"` for method defs only |
+| `rails_get_view` | View templates, partials with render locals, Stimulus references |
+| `rails_get_stimulus` | Stimulus controllers — targets, values, actions, outlets, lifecycle methods |
+| `rails_get_edit_context` | Surgical edit helper — returns code with class/method context and line numbers |
+| `rails_validate` | Syntax + semantic validation with fix suggestions (migrations, dependent options, index commands) |
+| `rails_analyze_feature` | Full-stack feature analysis — models, controllers, routes, services, jobs, views, Stimulus, tests, test coverage gaps |
 | `rails_get_design_system` | App design system — color palette, component patterns with real HTML examples, typography, layout, responsive breakpoints |
 | `rails_security_scan` | Brakeman static security analysis — SQL injection, XSS, mass assignment. Filter by file, confidence level, specific checks |
 
@@ -341,6 +341,7 @@ end
 | `concern_paths` | `app/models/concerns app/controllers/concerns` | Where to look for concern source files |
 | **Extensibility** | | |
 | `custom_tools` | `[]` | Additional MCP tool classes to register alongside built-in tools |
+| `skip_tools` | `[]` | Built-in tool names to exclude (e.g. `%w[rails_security_scan]`) |
 </details>
 
 ---

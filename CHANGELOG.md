@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-24
+
+### Added
+
+- **`rails_security_scan` tool** — Brakeman static security analysis via MCP. Detects SQL injection, XSS, mass assignment, and more. Optional dependency — returns install instructions if Brakeman isn't present. Supports file filtering, confidence levels (high/medium/weak), specific check selection, and three detail levels (summary/standard/full).
+- **`config.skip_tools`** — users can now exclude specific built-in tools: `config.skip_tools = %w[rails_security_scan]`. Defaults to empty (all 16 tools active).
+- **Schema index hints** — `get_schema` standard detail now shows `[indexed]`/`[unique]` on columns, saving a round-trip to full detail.
+- **Enum backing types** — `get_model_details` now shows integer vs string backing: `status: pending(0), active(1) [integer]`.
+- **Search context lines default 2** — `search_code` now returns 2 lines of context by default (was 0). Eliminates follow-up calls for context.
+- **`match_type` parameter for search** — `search_code` supports `match_type:"definition"` (only `def` lines) and `match_type:"class"` (only `class`/`module` lines).
+- **Controller respond_to formats** — `get_controllers` surfaces `respond_to` formats (html, json) already collected by introspector.
+- **Config database/auth/assets detection** — `get_config` now shows database adapter, auth framework (Devise/Rodauth/etc), and assets stack (Tailwind/esbuild/etc).
+- **Frontend stack detection** — `get_conventions` detects frontend dependencies from package.json (Tailwind, React, TypeScript, Turbo, etc).
+- **Validate fix suggestions** — semantic warnings now include actionable fix hints (migration commands, `dependent:` options, index commands).
+- **Prism fallback indicator** — `validate` reports when Prism is unavailable so agents know semantic checks may be skipped.
+- **Factory attributes/traits** — `get_test_info` full detail parses factory files to show attributes and traits, not just names.
+- **Partial render locals** — `get_view` standard detail shows what locals each partial receives based on render call scanning.
+- **Edit context header** — `get_edit_context` shows enclosing class/method name in response header.
+- **Gem config location hints** — `get_gems` shows config file paths for 17 common gems (Devise, Sidekiq, Pundit, etc).
+- **Stimulus lifecycle detection** — `get_stimulus` detects connect/disconnect/initialize lifecycle methods.
+- **Route params inline** — `get_routes` standard detail shows required params: `[id]`, `[user_id, id]`.
+- **Feature test coverage gaps** — `analyze_feature` reports which models/controllers/jobs lack test files.
+
+### Fixed
+
+- **JS fallback validator false-positives** — escaped backslashes before string-closing quotes (`"path\\"`) no longer cause false bracket mismatch errors. Replaced `prev_char` check with proper `escaped` toggle flag.
+
 ## [1.3.1] - 2026-03-23
 
 ### Fixed

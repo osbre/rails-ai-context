@@ -101,7 +101,13 @@ module RailsAiContext
         else ""
         end
 
+        # Detect enclosing class and method for context
+        class_name = source_lines[0..match_idx].reverse.find { |l| l.match?(/\A\s*(class|module)\s/) }&.strip&.sub(/\s*<.*/, "")
+        method_name = method_start ? source_lines[method_start].strip.sub(/\s*\(.*/, "").sub(/\Adef\s+/, "def ") : nil
+        context_label = [ class_name, method_name ].compact.join(" > ")
+
         output = [ "# #{file} (lines #{start_idx + 1}-#{end_idx + 1} of #{source_lines.size})", "" ]
+        output << "**Context:** `#{context_label}`" unless context_label.empty?
         output << "```#{lang}"
         output << context_code
         output << "```"
