@@ -251,13 +251,4 @@ namespace :ai do
     puts ""
     puts "AI Readiness Score: #{result[:score]}/100"
   end
-
-  desc "Generate a shareable AI readiness scorecard for your app"
-  task scorecard: :environment do
-    require "rails_ai_context"
-
-    scorecard = RailsAiContext::Scorecard.new
-    result = scorecard.generate
-    puts scorecard.render(result)
-  end
 end
