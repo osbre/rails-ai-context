@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-03-25
+
+### Fixed
+
+- **MCP-first mandatory workflow in all serializers** — all 6 serializer outputs (Claude, Cursor, Copilot, Windsurf, OpenCode) now use "MANDATORY, Use Before Read" language with structured workflow, anti-patterns table, and "Do NOT Bypass" rules. AI agents are explicitly instructed to never read reference files directly.
+- **27 type-safety bugs in serializers** — fixed `.keys` called on Array values (same pattern as #14) across `design_system_helper.rb`, `get_design_system.rb`, `markdown_serializer.rb`, and `stack_overview_helper.rb`.
+- **Strong params JSONB check** — no longer skips the entire check when JSONB columns exist. Plain-word params allowed (could be JSON keys), `_id` params still validated.
+- **Strong params test skip on Ruby < 3.3** — test now skips gracefully when Prism is unavailable, matching the tool's own degradation.
+- **Issue #14** — `multi_db[:databases].keys` crash on Array fixed.
+- **Search code NON_CODE_GLOBS** — excludes lock files, docs, CI configs, generated context from all searches.
+
 ## [2.0.0] - 2026-03-24
 
 ### Added
