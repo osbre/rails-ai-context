@@ -65,7 +65,7 @@ RSpec.describe RailsAiContext::Tools::Validate do
     end
   end
 
-  describe "strong params vs schema check" do
+  describe "strong params vs schema check", skip: (!defined?(Prism) && "requires Prism (Ruby 3.3+)") do
     let(:controllers_dir) { File.join(Rails.root, "app", "controllers") }
 
     after do
