@@ -6,7 +6,6 @@ ASSISTANT_TABLE = <<~TABLE unless defined?(ASSISTANT_TABLE)
   Claude Code        CLAUDE.md + .claude/rules/            rails ai:context:claude
   OpenCode           AGENTS.md                             rails ai:context:opencode
   Cursor             .cursor/rules/                        rails ai:context:cursor
-  Windsurf           .windsurfrules + .windsurf/rules/     rails ai:context:windsurf
   GitHub Copilot     .github/copilot-instructions.md       rails ai:context:copilot
   JSON (generic)     .ai-context.json                      rails ai:context:json
 TABLE
@@ -28,8 +27,7 @@ AI_TOOL_OPTIONS = {
   "1" => { key: :claude,   name: "Claude Code" },
   "2" => { key: :cursor,   name: "Cursor" },
   "3" => { key: :copilot,  name: "GitHub Copilot" },
-  "4" => { key: :windsurf, name: "Windsurf" },
-  "5" => { key: :opencode, name: "OpenCode" }
+  "4" => { key: :opencode, name: "OpenCode" }
 }.freeze unless defined?(AI_TOOL_OPTIONS)
 
 def prompt_ai_tools
@@ -115,7 +113,7 @@ namespace :ai do
     puts "Change AI tools: config/initializers/rails_ai_context.rb (config.ai_tools)"
   end
 
-  desc "Generate AI context in a specific format (claude, cursor, windsurf, copilot, json)"
+  desc "Generate AI context in a specific format (claude, cursor, copilot, json)"
   task :context_for, [ :format ] => :environment do |_t, args|
     require "rails_ai_context"
 
@@ -131,7 +129,7 @@ namespace :ai do
   end
 
   namespace :context do
-    { claude: "CLAUDE.md", opencode: "AGENTS.md", cursor: ".cursor/rules/", windsurf: ".windsurfrules",
+    { claude: "CLAUDE.md", opencode: "AGENTS.md", cursor: ".cursor/rules/",
       copilot: ".github/copilot-instructions.md", json: ".ai-context.json" }.each do |fmt, file|
       desc "Generate #{file} context file"
       task fmt => :environment do

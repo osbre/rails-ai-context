@@ -13,8 +13,7 @@ module RailsAiContext
         "1" => { key: :claude,   name: "Claude Code",     files: "CLAUDE.md + .claude/rules/",                        format: :claude },
         "2" => { key: :cursor,   name: "Cursor",          files: ".cursor/rules/",                                     format: :cursor },
         "3" => { key: :copilot,  name: "GitHub Copilot",  files: ".github/copilot-instructions.md + .github/instructions/", format: :copilot },
-        "4" => { key: :windsurf, name: "Windsurf",        files: ".windsurfrules + .windsurf/rules/",                  format: :windsurf },
-        "5" => { key: :opencode, name: "OpenCode",        files: "AGENTS.md",                                          format: :opencode }
+        "4" => { key: :opencode, name: "OpenCode",        files: "AGENTS.md",                                          format: :opencode }
       }.freeze
 
       def select_ai_tools
@@ -74,7 +73,7 @@ module RailsAiContext
 
       def create_initializer
         tools_line = if @selected_formats.size == AI_TOOLS.size
-          "  # config.ai_tools = %i[claude cursor copilot windsurf opencode]  # default: all"
+          "  # config.ai_tools = %i[claude cursor copilot opencode]  # default: all"
         else
           "  config.ai_tools = %i[#{@selected_formats.join(' ')}]"
         end

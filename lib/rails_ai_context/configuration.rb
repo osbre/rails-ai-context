@@ -56,7 +56,7 @@ module RailsAiContext
     # Debounce interval in seconds for live reload file watching
     attr_accessor :live_reload_debounce
 
-    # Whether to generate root-level context files (CLAUDE.md, AGENTS.md, .windsurfrules, etc.)
+    # Whether to generate root-level context files (CLAUDE.md, AGENTS.md, etc.)
     # When false, only generates split rule files (.claude/rules/, .cursor/rules/, etc.)
     attr_accessor :generate_root_files
 
@@ -76,7 +76,7 @@ module RailsAiContext
     attr_accessor :skip_tools
 
     # Which AI tools to generate context for (selected during install)
-    # nil = all formats, or %i[claude cursor copilot windsurf opencode]
+    # nil = all formats, or %i[claude cursor copilot opencode]
     attr_accessor :ai_tools
 
     # Filtering — customize what's hidden from AI output

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-03-26
+
+### Removed
+
+- **Windsurf support dropped** — removed `WindsurfSerializer`, `WindsurfRulesSerializer`, `.windsurfrules` generation, and `.windsurf/rules/` split rules. v2.0.5 is the last version with Windsurf support. If you need Windsurf context files, pin `gem "rails-ai-context", "~> 2.0"` in your Gemfile.
+
+### Changed
+
+- Serializer count reduced from 6 to 5 (Claude, Cursor, Copilot, OpenCode, JSON).
+- Install generator AI tool selection renumbered (4 options instead of 5).
+- All documentation, rake tasks, CLI, and configuration updated to reflect Windsurf removal.
+
 ## [2.0.5] - 2026-03-25
 
 ### Changed

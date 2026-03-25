@@ -78,7 +78,6 @@ rails ai:context
 ```
 
 - CLAUDE.md ≤150 lines
-- .windsurfrules ≤5,800 characters
 - copilot-instructions.md ≤500 lines
 - Files contain a project overview + MCP tool reference
 - AI uses MCP tools for detailed data on-demand
@@ -104,9 +103,6 @@ CONTEXT_MODE=full rails ai:context:claude
 
 # Full dump for Cursor only
 CONTEXT_MODE=full rails ai:context:cursor
-
-# Full dump for Windsurf only (still respects 6K char limit)
-CONTEXT_MODE=full rails ai:context:windsurf
 
 # Full dump for Copilot only
 CONTEXT_MODE=full rails ai:context:copilot
@@ -156,15 +152,6 @@ end
 | `.cursor/rules/rails-ui-patterns.mdc` | UI patterns and design tokens | `globs: app/views/**/*.erb` — loaded when editing views. |
 | `.cursor/rules/rails-mcp-tools.mdc` | MCP tool reference | `alwaysApply: true` — always available. |
 
-### Windsurf (4 files)
-
-| File | Purpose | Notes |
-|------|---------|-------|
-| `.windsurfrules` | Main context file | Hard-capped at 5,800 chars (Windsurf's 6K limit). Truncated silently if exceeded. |
-| `.windsurf/rules/rails-context.md` | Project overview | New Windsurf rules format. |
-| `.windsurf/rules/rails-ui-patterns.md` | UI patterns and design tokens | Loaded when editing views. |
-| `.windsurf/rules/rails-mcp-tools.md` | MCP tool reference | Compact — respects 6K per-file limit. |
-
 ### GitHub Copilot (6 files)
 
 | File | Purpose | Notes |
@@ -199,12 +186,10 @@ Commit **all files except `.ai-context.json`** (which is gitignored). This gives
 | `rails ai:context:claude` | compact | Claude | CLAUDE.md + .claude/rules/ |
 | `rails ai:context:opencode` | compact | OpenCode | AGENTS.md + per-directory AGENTS.md |
 | `rails ai:context:cursor` | compact | Cursor | .cursor/rules/ |
-| `rails ai:context:windsurf` | compact | Windsurf | .windsurfrules + .windsurf/rules/ |
 | `rails ai:context:copilot` | compact | Copilot | copilot-instructions.md + .github/instructions/ |
 | `rails ai:context:json` | — | JSON | .ai-context.json |
 | `CONTEXT_MODE=full rails ai:context:claude` | full | Claude | Full dump for Claude only |
 | `CONTEXT_MODE=full rails ai:context:cursor` | full | Cursor | Full dump for Cursor only |
-| `CONTEXT_MODE=full rails ai:context:windsurf` | full | Windsurf | Full dump for Windsurf only |
 | `CONTEXT_MODE=full rails ai:context:copilot` | full | Copilot | Full dump for Copilot only |
 
 ### MCP server
@@ -1183,7 +1168,7 @@ end
 | `cache_ttl` | Integer | `60` | Cache TTL in seconds for introspection results |
 | `custom_tools` | Array | `[]` | Additional MCP tool classes to register alongside built-in tools |
 | `skip_tools` | Array | `[]` | Built-in tool names to exclude (e.g. `%w[rails_security_scan]`) |
-| `ai_tools` | Array | `nil` (all) | AI tools to generate context for: `%i[claude cursor copilot windsurf opencode]`. Selected during install. |
+| `ai_tools` | Array | `nil` (all) | AI tools to generate context for: `%i[claude cursor copilot opencode]`. Selected during install. |
 | `excluded_models` | Array | internal Rails models | Models to skip |
 | `excluded_paths` | Array | `node_modules tmp log vendor .git` | Paths excluded from code search |
 | `sensitive_patterns` | Array | `.env`, `.key`, `.pem`, credentials | File patterns blocked from search and read tools |
@@ -1196,7 +1181,7 @@ end
 | `live_reload_debounce` | Float | `1.5` | Debounce interval in seconds for live reload |
 | `server_name` | String | `"rails-ai-context"` | MCP server name |
 | `server_version` | String | gem version | MCP server version |
-| `generate_root_files` | Boolean | `true` | Generate root files (CLAUDE.md, .windsurfrules, etc.) — set `false` for split rules only |
+| `generate_root_files` | Boolean | `true` | Generate root files (CLAUDE.md, etc.) — set `false` for split rules only |
 | `max_file_size` | Integer | `5_000_000` | Per-file read limit for tools (5MB) |
 | `max_test_file_size` | Integer | `1_000_000` | Test file read limit (1MB) |
 | `max_schema_file_size` | Integer | `10_000_000` | schema.rb / structure.sql parse limit (10MB) |
@@ -1214,11 +1199,11 @@ end
 
 ### Root file generation
 
-By default, `rails ai:context` generates root files (CLAUDE.md, AGENTS.md, .windsurfrules, etc.) alongside split rules.
+By default, `rails ai:context` generates root files (CLAUDE.md, AGENTS.md, etc.) alongside split rules.
 
 **Section markers:** Generated content is wrapped in `<!-- BEGIN rails-ai-context -->` / `<!-- END rails-ai-context -->` markers. If you add custom notes above or below the markers, they will be preserved when you re-run `rails ai:context`.
 
-**Skip root files:** If you prefer to maintain root files yourself and only want split rules (`.claude/rules/`, `.cursor/rules/`, `.windsurf/rules/`, `.github/instructions/`):
+**Skip root files:** If you prefer to maintain root files yourself and only want split rules (`.claude/rules/`, `.cursor/rules/`, `.github/instructions/`):
 
 ```ruby
 RailsAiContext.configure do |config|
@@ -1344,16 +1329,6 @@ config.introspectors = %i[schema models routes gems auth api]
 OpenCode uses **per-directory lazy-loading**: when the agent reads a file, it walks up the directory tree and auto-loads any `AGENTS.md` it finds. This is how split rules work — no globs or frontmatter needed.
 
 **MCP tools:** Available via `opencode.json` config above.
-
-### Windsurf
-
-**Context files loaded:**
-- `.windsurfrules` — read at conversation start (≤6,000 chars, silently truncated if exceeded)
-- `.windsurf/rules/*.md` — new rules format
-
-**Limits:**
-- 6,000 characters per rule file
-- 12,000 characters total (global + workspace combined)
 
 ### GitHub Copilot
 

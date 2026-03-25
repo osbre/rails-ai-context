@@ -3,7 +3,7 @@
 module RailsAiContext
   module Serializers
     # Generates AI-friendly markdown context files from introspection data.
-    # Outputs: CLAUDE.md (for Claude Code), .windsurfrules, etc.
+    # Outputs: CLAUDE.md (for Claude Code), copilot-instructions.md, etc.
     class MarkdownSerializer # rubocop:disable Metrics/ClassLength
       include TestCommandDetection
 

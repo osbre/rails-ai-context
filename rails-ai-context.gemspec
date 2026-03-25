@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
     conventions connect. 25 live MCP tools let agents query structure on demand with
     semantic validation that catches cross-file errors (wrong columns, missing
     partials, broken routes) before code runs. Auto-generates context files for
-    Claude Code, Cursor, Windsurf, GitHub Copilot, and OpenCode. Zero config.
+    Claude Code, Cursor, GitHub Copilot, and OpenCode. Zero config.
   DESC
 
   spec.homepage      = "https://github.com/crisnahine/rails-ai-context"

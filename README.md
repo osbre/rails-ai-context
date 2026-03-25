@@ -7,7 +7,7 @@
 [![CI](https://github.com/crisnahine/rails-ai-context/actions/workflows/ci.yml/badge.svg)](https://github.com/crisnahine/rails-ai-context/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Works with:** Claude Code &bull; Cursor &bull; GitHub Copilot &bull; Windsurf &bull; OpenCode
+**Works with:** Claude Code &bull; Cursor &bull; GitHub Copilot &bull; OpenCode
 
 > Built by a Rails developer with 10 years of production experience. Yes, AI helped write this gem — the same way AI helps me ship features at work. I designed the architecture, made every decision, reviewed every line, and wrote 575 tests. The gem exists because I understand Rails deeply enough to know what AI agents get wrong and what context they need to get it right.
 
@@ -151,7 +151,7 @@ Every tool is **read-only** and returns structured, token-efficient data. Start 
 │  CLAUDE.md          │    │  Real-time queries on demand   │
 │  .cursor/rules/     │    │  Schema, models, routes, etc.  │
 │  .github/instr...   │    │  Trace, validate, analyze      │
-│  .windsurfrules     │    │  Auto-discovered via .mcp.json │
+│                     │    │  Auto-discovered via .mcp.json │
 └────────────────────┘    └───────────────────────────────┘
 ```
 
@@ -172,7 +172,7 @@ rails generate rails_ai_context:install
 rails ai:context
 ```
 
-Both commands ask which AI tools you use (Claude, Cursor, Copilot, Windsurf, OpenCode) and only generate what you need.
+Both commands ask which AI tools you use (Claude, Cursor, Copilot, OpenCode) and only generate what you need.
 
 MCP auto-discovery: `.mcp.json` is detected automatically by Claude Code and Cursor. No manual config.
 
@@ -211,7 +211,7 @@ end
 | `context_mode` | `:compact` | `:compact` (≤150 lines) or `:full` (dump everything) |
 | `claude_max_lines` | `150` | Max lines for CLAUDE.md in compact mode |
 | `generate_root_files` | `true` | Generate root files (CLAUDE.md, etc.) — set `false` for split rules only |
-| `ai_tools` | `nil` (all) | AI tools to generate context for: `%i[claude cursor copilot windsurf opencode]` |
+| `ai_tools` | `nil` (all) | AI tools to generate context for: `%i[claude cursor copilot opencode]` |
 | **MCP Server** | | |
 | `cache_ttl` | `60` | Cache TTL in seconds |
 | `max_tool_response_chars` | `200_000` | Safety cap for MCP tool responses |

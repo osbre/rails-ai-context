@@ -11,8 +11,8 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
         serializer = described_class.new(context, format: :all)
         result = serializer.call
-        # 5 root files + split rules (claude/rules, cursor/rules, windsurf/rules, opencode, github/instructions)
-        expect(result[:written].size).to be >= 5
+        # 4 root files + split rules (claude/rules, cursor/rules, opencode, github/instructions)
+        expect(result[:written].size).to be >= 4
         expect(result[:skipped]).to be_empty
       end
     end
@@ -55,16 +55,6 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         cursor_rules = result[:written].select { |f| f.include?(".cursor/rules/") }
         expect(cursor_rules).not_to be_empty
         expect(result[:written].none? { |f| f.end_with?(".cursorrules") }).to be true
-      end
-    end
-
-    it "generates .windsurf/rules/ when writing windsurf format" do
-      Dir.mktmpdir do |dir|
-        allow(RailsAiContext.configuration).to receive(:output_dir_for).and_return(dir)
-        serializer = described_class.new(context, format: :windsurf)
-        result = serializer.call
-        windsurf_rules = result[:written].select { |f| f.include?(".windsurf/rules/") }
-        expect(windsurf_rules).not_to be_empty
       end
     end
 
@@ -173,7 +163,7 @@ RSpec.describe RailsAiContext::Serializers::ContextFileSerializer do
         result = described_class.new(context, format: :all).call
         root_files = result[:written].select { |f|
           base = File.basename(f)
-          %w[CLAUDE.md AGENTS.md .windsurfrules .ai-context.json].include?(base) ||
+          %w[CLAUDE.md AGENTS.md .ai-context.json].include?(base) ||
             f.end_with?("copilot-instructions.md")
         }
         expect(root_files).to be_empty
