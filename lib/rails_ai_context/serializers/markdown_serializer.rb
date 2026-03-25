@@ -104,7 +104,7 @@ module RailsAiContext
             vals = data[:validations].map { |v| "#{v[:kind]} on #{v[:attributes].join(', ')}" }.join("; ")
             lines << "- Validations: #{vals}"
           end
-          lines << "- Enums: #{data[:enums].keys.join(', ')}" if data[:enums]&.any?
+          lines << "- Enums: #{data[:enums].is_a?(Hash) ? data[:enums].keys.join(', ') : Array(data[:enums]).join(', ')}" if data[:enums]&.any?
         end
         lines.join("\n")
       end

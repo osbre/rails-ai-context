@@ -70,7 +70,8 @@ module RailsAiContext
           lines << "## Responsive Breakpoints"
           lines << ""
           responsive.each do |bp, classes|
-            lines << "- **#{bp}:** #{classes.keys.first(4).join(', ')}"
+            names = classes.is_a?(Hash) ? classes.keys : Array(classes)
+            lines << "- **#{bp}:** #{names.first(4).join(', ')}"
           end
           lines << ""
         end
@@ -177,9 +178,9 @@ module RailsAiContext
 
         lines = [ "### Layout & Spacing" ]
 
-        lines << "- Container: #{layout[:containers].keys.first(2).join(', ')}" if layout[:containers]&.any?
-        lines << "- Grid: #{layout[:grid].keys.first(3).join(', ')}" if layout[:grid]&.any?
-        lines << "- Spacing: #{layout[:spacing_scale].keys.first(6).join(', ')}" if layout[:spacing_scale]&.any?
+        lines << "- Container: #{layout[:containers].is_a?(Hash) ? layout[:containers].keys.first(2).join(', ') : Array(layout[:containers]).first(2).join(', ')}" if layout[:containers]&.any?
+        lines << "- Grid: #{layout[:grid].is_a?(Hash) ? layout[:grid].keys.first(3).join(', ') : Array(layout[:grid]).first(3).join(', ')}" if layout[:grid]&.any?
+        lines << "- Spacing: #{layout[:spacing_scale].is_a?(Hash) ? layout[:spacing_scale].keys.first(6).join(', ') : Array(layout[:spacing_scale]).first(6).join(', ')}" if layout[:spacing_scale]&.any?
         lines << "- Form spacing: #{fl[:spacing]}" if fl[:spacing]
 
         lines << ""
@@ -194,7 +195,7 @@ module RailsAiContext
 
         %w[hover focus active disabled].each do |state|
           next unless states[state]&.any?
-          top = states[state].keys.first(3).join(", ")
+          top = states[state].is_a?(Hash) ? states[state].keys.first(3).join(", ") : Array(states[state]).first(3).join(", ")
           lines << "- **#{state}:** #{top}"
         end
 
@@ -208,7 +209,7 @@ module RailsAiContext
 
         lines = [ "### Dark Mode" ]
         lines << "- Active — use `dark:` prefix for all color-dependent classes"
-        lines << "- Common: #{dark[:patterns].keys.first(5).join(', ')}" if dark[:patterns]&.any?
+        lines << "- Common: #{dark[:patterns].is_a?(Hash) ? dark[:patterns].keys.first(5).join(', ') : Array(dark[:patterns]).first(5).join(', ')}" if dark[:patterns]&.any?
         lines << ""
         lines
       end
@@ -259,7 +260,7 @@ module RailsAiContext
 
         layout = patterns[:layout] || {}
         if layout[:spacing_scale]&.any?
-          top = layout[:spacing_scale].keys.first(4).join(", ")
+          top = layout[:spacing_scale].is_a?(Hash) ? layout[:spacing_scale].keys.first(4).join(", ") : Array(layout[:spacing_scale]).first(4).join(", ")
           lines << "- Use existing spacing scale: #{top}"
         end
 
