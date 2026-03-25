@@ -217,6 +217,7 @@ module RailsAiContext
         lines = [
           "---",
           "applyTo: \"**/*\"",
+          "excludeAgent: \"code-review\"",
           "---",
           "",
           "# Rails MCP Tools — MANDATORY, Use Before Read/Grep",
