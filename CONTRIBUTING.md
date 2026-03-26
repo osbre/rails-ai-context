@@ -18,13 +18,14 @@ The test suite uses [Combustion](https://github.com/pat/combustion) to boot a mi
 
 ```
 lib/rails_ai_context/
+├── cli/               # CLI tool runner (tool_runner.rb) — executes MCP tools from rake/Thor
 ├── introspectors/     # 29 introspectors (schema, models, routes, etc.)
 ├── tools/             # 25 MCP tools with detail levels and pagination
-├── serializers/       # Per-assistant formatters (claude, opencode, cursor, copilot, JSON)
+├── serializers/       # Per-assistant formatters + shared ToolGuideHelper
 ├── server.rb          # MCP server setup (stdio + HTTP)
 ├── live_reload.rb     # MCP live reload (file watcher + cache invalidation)
 ├── engine.rb          # Rails Engine for auto-integration
-└── configuration.rb   # User-facing config (presets, context_mode, limits)
+└── configuration.rb   # User-facing config (presets, context_mode, tool_mode, limits)
 ```
 
 ## Adding a New Introspector
@@ -42,6 +43,10 @@ lib/rails_ai_context/
 3. Implement `def self.call(...)` returning `text_response(string)`
 4. Register in `Server::TOOLS`
 5. Write specs in `spec/lib/rails_ai_context/tools/your_tool_spec.rb`
+
+## Adding a CLI Tool Interface
+
+The `ToolRunner` (`lib/rails_ai_context/cli/tool_runner.rb`) handles CLI execution of all MCP tools. It is tested in `spec/lib/rails_ai_context/cli/tool_runner_spec.rb`. If you add a new MCP tool, it is automatically available via CLI — no extra registration needed. Tool name resolution (`schema` → `get_schema` → `rails_get_schema`) works for all tools.
 
 ## Code Style
 

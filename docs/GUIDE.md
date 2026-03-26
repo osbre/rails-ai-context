@@ -11,6 +11,7 @@
 - [Context Modes](#context-modes)
 - [Generated Files](#generated-files)
 - [All Commands](#all-commands)
+- [CLI Tools](#cli-tools)
 - [MCP Tools — Full Reference](#mcp-tools--full-reference)
 - [MCP Resources](#mcp-resources)
 - [MCP Server Setup](#mcp-server-setup)
@@ -62,8 +63,10 @@ rails ai:doctor
 
 1. Creates `.mcp.json` in project root (MCP auto-discovery)
 2. Creates `config/initializers/rails_ai_context.rb` with commented defaults
-3. Adds `.ai-context.json` to `.gitignore` (JSON cache — markdown files should be committed)
-4. Generates all context files
+3. Asks which AI tools you use (Claude, Cursor, Copilot, OpenCode)
+4. Asks whether to enable MCP server (`tool_mode: :mcp`) or use CLI-only mode (`tool_mode: :cli`)
+5. Adds `.ai-context.json` to `.gitignore` (JSON cache — markdown files should be committed)
+6. Generates all context files
 
 ---
 
@@ -192,6 +195,14 @@ Commit **all files except `.ai-context.json`** (which is gitignored). This gives
 | `CONTEXT_MODE=full rails ai:context:cursor` | full | Cursor | Full dump for Cursor only |
 | `CONTEXT_MODE=full rails ai:context:copilot` | full | Copilot | Full dump for Copilot only |
 
+### CLI tools
+
+| Command | Description |
+|---------|-------------|
+| `rails 'ai:tool[NAME]'` | Run any MCP tool from the CLI (e.g. `rails 'ai:tool[schema]' table=users detail=full`) |
+| `rails ai:tool` | List all available tools with descriptions |
+| `rails 'ai:tool[NAME]' JSON=1` | Run tool with JSON envelope output |
+
 ### MCP server
 
 | Command | Transport | Description |
@@ -217,6 +228,10 @@ rails-ai-context serve --transport http    # Start MCP server (HTTP, port 6029)
 rails-ai-context serve --transport http --port 8080  # Custom port
 rails-ai-context context                   # Generate all context files
 rails-ai-context context --format claude   # Generate Claude files only
+rails-ai-context tool                      # List all available tools
+rails-ai-context tool schema --table users --detail full  # Run a tool
+rails-ai-context tool schema --help        # Per-tool help
+rails-ai-context tool schema --json        # JSON envelope output
 rails-ai-context doctor                    # Run diagnostics
 rails-ai-context watch                     # Watch for changes
 rails-ai-context inspect                   # Print introspection JSON
@@ -232,6 +247,70 @@ Must be run from your Rails app root directory (requires `config/environment.rb`
 rails 'ai:context_for[claude]'   # Requires quoting in zsh
 rails ai:context:claude           # Use this instead (no quoting needed)
 ```
+
+---
+
+## CLI Tools
+
+All 25 MCP tools can be run directly from the terminal — no MCP server or AI client needed.
+
+### Rake
+
+```bash
+# Run a tool with arguments
+rails 'ai:tool[schema]' table=users detail=full
+
+# List all available tools
+rails ai:tool
+
+# JSON envelope output
+rails 'ai:tool[schema]' table=users JSON=1
+```
+
+### Thor CLI
+
+```bash
+# Run a tool with arguments
+rails-ai-context tool schema --table users --detail full
+
+# List all tools
+rails-ai-context tool
+
+# Per-tool help (auto-generated from input_schema)
+rails-ai-context tool schema --help
+
+# JSON output
+rails-ai-context tool schema --table users --json
+```
+
+### Tool name resolution
+
+Short names are resolved automatically:
+
+| You type | Resolves to |
+|----------|-------------|
+| `schema` | `rails_get_schema` |
+| `get_schema` | `rails_get_schema` |
+| `rails_get_schema` | `rails_get_schema` |
+| `search_code` | `rails_search_code` |
+| `analyze_feature` | `rails_analyze_feature` |
+
+### tool_mode configuration
+
+The `tool_mode` config controls how tool references appear in generated context files:
+
+```ruby
+RailsAiContext.configure do |config|
+  # :mcp (default) — MCP primary, CLI as fallback
+  # :cli — CLI only, no MCP server needed
+  config.tool_mode = :mcp
+end
+```
+
+- **`:mcp`** — context files show MCP tool syntax (e.g. `rails_get_schema(table: "users")`). CLI tools still available as fallback.
+- **`:cli`** — context files show CLI syntax (e.g. `rails 'ai:tool[schema]' table=users`). No MCP server required.
+
+The `tool_mode` is selected during `rails generate rails_ai_context:install`.
 
 ---
 
@@ -1068,6 +1147,9 @@ RailsAiContext.configure do |config|
 
   # --- MCP tools ---
 
+  # Tool mode: :mcp (MCP primary + CLI fallback) or :cli (CLI only)
+  config.tool_mode = :mcp
+
   # Max response size for tool results (safety net)
   config.max_tool_response_chars = 200_000
 
@@ -1168,6 +1250,7 @@ end
 | `cache_ttl` | Integer | `60` | Cache TTL in seconds for introspection results |
 | `custom_tools` | Array | `[]` | Additional MCP tool classes to register alongside built-in tools |
 | `skip_tools` | Array | `[]` | Built-in tool names to exclude (e.g. `%w[rails_security_scan]`) |
+| `tool_mode` | Symbol | `:mcp` | `:mcp` (MCP primary + CLI fallback) or `:cli` (CLI only, no MCP server needed) |
 | `ai_tools` | Array | `nil` (all) | AI tools to generate context for: `%i[claude cursor copilot opencode]`. Selected during install. |
 | `excluded_models` | Array | internal Rails models | Models to skip |
 | `excluded_paths` | Array | `node_modules tmp log vendor .git` | Paths excluded from code search |

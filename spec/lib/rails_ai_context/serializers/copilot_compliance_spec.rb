@@ -252,10 +252,11 @@ RSpec.describe "Copilot instructions compliance" do
         expect(file[:content]).to include("What Are You Trying to Do?")
       end
 
-      it "MCP tools file has graceful fallback language" do
+      it "MCP tools file has mandatory language with CLI fallback" do
         file = generated_files["rails-mcp-tools.instructions.md"]
-        expect(file[:content]).to include("not available")
-        expect(file[:content]).to include("Prefer MCP tools")
+        expect(file[:content]).to include("MANDATORY")
+        expect(file[:content]).to include("NEVER read")
+        expect(file[:content]).to include("rails 'ai:tool[")
       end
     end
 

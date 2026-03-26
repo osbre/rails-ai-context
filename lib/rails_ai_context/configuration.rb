@@ -79,6 +79,9 @@ module RailsAiContext
     # nil = all formats, or %i[claude cursor copilot opencode]
     attr_accessor :ai_tools
 
+    # Tool invocation mode: :mcp (MCP primary + CLI fallback) or :cli (CLI only)
+    attr_accessor :tool_mode
+
     # Filtering — customize what's hidden from AI output
     attr_accessor :excluded_controllers   # Controller classes hidden from listings (e.g. DeviseController)
     attr_accessor :excluded_route_prefixes # Route controller prefixes hidden with app_only (e.g. action_mailbox/)
@@ -153,6 +156,7 @@ module RailsAiContext
       @custom_tools             = []
       @skip_tools               = []
       @ai_tools                 = nil
+      @tool_mode                = :mcp
       @search_extensions        = %w[rb js erb yml yaml json ts tsx vue svelte haml slim]
       @concern_paths            = %w[app/models/concerns app/controllers/concerns]
     end

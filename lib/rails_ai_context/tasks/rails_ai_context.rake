@@ -56,6 +56,67 @@ def prompt_ai_tools
   selected
 end unless defined?(prompt_ai_tools)
 
+def prompt_tool_mode
+  puts ""
+  puts "Do you also want MCP server support?"
+  puts ""
+  puts "  1. Yes — MCP primary + CLI fallback (generates .mcp.json)"
+  puts "  2. No  — CLI only (no server needed)"
+  puts ""
+  print "Enter number (default: 1): "
+  input = $stdin.gets&.strip || "1"
+
+  mode = input == "2" ? :cli : :mcp
+  label = mode == :mcp ? "MCP + CLI fallback" : "CLI only"
+  puts "Selected: #{label}"
+  mode
+end unless defined?(prompt_tool_mode)
+
+def save_tool_mode_to_initializer(mode)
+  init_path = Rails.root.join("config/initializers/rails_ai_context.rb")
+  return unless File.exist?(init_path)
+
+  content = File.read(init_path)
+  mode_line = "  config.tool_mode = :#{mode}"
+
+  if content.include?("config.tool_mode")
+    content.sub!(/^.*config\.tool_mode.*$/, mode_line)
+  elsif content.include?("config.ai_tools")
+    # Insert after ai_tools line
+    content.sub!(/^(.*config\.ai_tools.*)$/, "\\1\n#{mode_line}")
+  elsif content.include?("RailsAiContext.configure")
+    content.sub!(/RailsAiContext\.configure do \|config\|\n/, "RailsAiContext.configure do |config|\n#{mode_line}\n")
+  else
+    return
+  end
+
+  File.write(init_path, content)
+rescue
+  nil
+end unless defined?(save_tool_mode_to_initializer)
+
+def ensure_mcp_json
+  mcp_path = Rails.root.join(".mcp.json")
+  return if File.exist?(mcp_path)
+
+  server_entry = { "command" => "bundle", "args" => [ "exec", "rails", "ai:serve" ] }
+  content = JSON.pretty_generate({ mcpServers: { "rails-ai-context" => server_entry } }) + "\n"
+  File.write(mcp_path, content)
+  puts "✅ Created .mcp.json (MCP auto-discovery for Claude Code, Cursor, etc.)"
+rescue => e
+  puts "⚠️  Could not create .mcp.json: #{e.message}"
+end unless defined?(ensure_mcp_json)
+
+def tool_mode_configured?
+  init_path = Rails.root.join("config/initializers/rails_ai_context.rb")
+  return false unless File.exist?(init_path)
+  content = File.read(init_path)
+  # Check for uncommented tool_mode line (not just a comment)
+  content.match?(/^\s*config\.tool_mode\s*=/)
+rescue
+  false
+end unless defined?(tool_mode_configured?)
+
 def save_ai_tools_to_initializer(tools)
   init_path = Rails.root.join("config/initializers/rails_ai_context.rb")
   return unless File.exist?(init_path)
@@ -80,6 +141,48 @@ rescue
 end unless defined?(save_ai_tools_to_initializer)
 
 namespace :ai do
+  desc "Run an MCP tool from the CLI: rails 'ai:tool[schema]' table=users detail=full"
+  task :tool, [ :name ] => :environment do |_t, args|
+    require "rails_ai_context"
+
+    name = args[:name]
+
+    unless name
+      puts RailsAiContext::CLI::ToolRunner.tool_list
+      next
+    end
+
+    # Parse key=value pairs from ARGV (skip rake-internal args)
+    params = {}
+    ARGV.each do |arg|
+      next if arg.start_with?("-") || arg.include?("[") || arg == "ai:tool"
+      if arg.include?("=")
+        key, value = arg.split("=", 2)
+        params[key.to_sym] = value
+      end
+    end
+
+    json_mode = ENV["JSON"] == "1"
+
+    if params.delete(:help) || ARGV.include?("--help")
+      runner = RailsAiContext::CLI::ToolRunner.new(name, {})
+      puts RailsAiContext::CLI::ToolRunner.tool_help(runner.tool_class)
+      next
+    end
+
+    runner = RailsAiContext::CLI::ToolRunner.new(name, params, json_mode: json_mode)
+    puts runner.run
+  rescue RailsAiContext::CLI::ToolRunner::ToolNotFoundError => e
+    $stderr.puts "Error: #{e.message}"
+    exit 1
+  rescue RailsAiContext::CLI::ToolRunner::InvalidArgumentError => e
+    $stderr.puts "Error: #{e.message}"
+    exit 3
+  rescue => e
+    $stderr.puts "Error: #{e.message}"
+    exit 2
+  end
+
   desc "Generate AI context files for configured AI tools (prompts on first run)"
   task context: :environment do
     require "rails_ai_context"
@@ -93,6 +196,16 @@ namespace :ai do
       ai_tools = prompt_ai_tools
       save_ai_tools_to_initializer(ai_tools) if ai_tools
     end
+
+    # Prompt for tool_mode if not yet configured in initializer
+    unless tool_mode_configured?
+      tool_mode = prompt_tool_mode
+      RailsAiContext.configuration.tool_mode = tool_mode
+      save_tool_mode_to_initializer(tool_mode)
+    end
+
+    # Auto-create .mcp.json when tool_mode is :mcp and it doesn't exist
+    ensure_mcp_json if RailsAiContext.configuration.tool_mode == :mcp
 
     puts "🔍 Introspecting #{Rails.application.class.module_parent_name}..."
 
