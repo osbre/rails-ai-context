@@ -63,11 +63,16 @@ module RailsAiContext
       }
     }.freeze
 
-    class << self
-      def register(server)
-        require "json"
+    MODEL_TEMPLATE = MCP::ResourceTemplate.new(
+      uri_template: "rails://models/{name}",
+      name: "Model Details",
+      description: "Detailed information about a specific ActiveRecord model",
+      mime_type: "application/json"
+    ).freeze
 
-        resources = STATIC_RESOURCES.map do |uri, meta|
+    class << self
+      def static_resources
+        STATIC_RESOURCES.map do |uri, meta|
           MCP::Resource.new(
             uri: uri,
             name: meta[:name],
@@ -75,17 +80,16 @@ module RailsAiContext
             mime_type: meta[:mime_type]
           )
         end
+      end
 
-        server.resources = resources
+      def resource_templates
+        [ MODEL_TEMPLATE ]
+      end
 
-        template = MCP::ResourceTemplate.new(
-          uri_template: "rails://models/{name}",
-          name: "Model Details",
-          description: "Detailed information about a specific ActiveRecord model",
-          mime_type: "application/json"
-        )
+      def register(server)
+        require "json"
 
-        server.resources_templates_list_handler { [ template ] }
+        server.resources = static_resources
 
         server.resources_read_handler do |params|
           handle_read(params)

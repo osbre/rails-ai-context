@@ -56,7 +56,8 @@ module RailsAiContext
       server = MCP::Server.new(
         name: config.server_name,
         version: config.server_version,
-        tools: active_tools(config) + config.custom_tools
+        tools: active_tools(config) + config.custom_tools,
+        resource_templates: Resources.resource_templates
       )
 
       Resources.register(server)
