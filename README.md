@@ -10,6 +10,7 @@
 [![Rails](https://img.shields.io/badge/Rails-7.1%20%7C%207.2%20%7C%208.0-red)](https://github.com/crisnahine/rails-ai-context)
 [![Tests](https://img.shields.io/badge/Tests-1529%20passing-brightgreen)](https://github.com/crisnahine/rails-ai-context/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/crisnahine/rails-ai-context?style=social)](https://github.com/crisnahine/rails-ai-context/stargazers)
 
 <p align="center">
   <a href="https://claude.ai/claude-code"><img src="https://img.shields.io/badge/Claude_Code-ee8b4a?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code"></a>
@@ -364,12 +365,6 @@ Bug reports and pull requests welcome at [github.com/crisnahine/rails-ai-context
 ## Sponsorship
 
 If rails-ai-context saves you time, consider [becoming a sponsor](https://github.com/sponsors/crisnahine).
-
-## Star History
-
-If this gem helps you, a star helps others find it.
-
-[![Star History Chart](https://api.star-history.com/svg?repos=crisnahine/rails-ai-context&type=Date)](https://star-history.com/#crisnahine/rails-ai-context&Date)
 
 ## License
 
