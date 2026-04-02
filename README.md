@@ -11,7 +11,13 @@
 [![Tests](https://img.shields.io/badge/Tests-1529%20passing-brightgreen)](https://github.com/crisnahine/rails-ai-context/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Works with:** Claude Code &bull; Cursor &bull; GitHub Copilot &bull; OpenCode &bull; Any terminal
+<p align="center">
+  <a href="https://claude.ai/claude-code"><img src="https://img.shields.io/badge/Claude_Code-ee8b4a?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code"></a>
+  <a href="https://cursor.com"><img src="https://img.shields.io/badge/Cursor-000000?style=for-the-badge&logo=cursor&logoColor=white" alt="Cursor"></a>
+  <a href="https://github.com/features/copilot"><img src="https://img.shields.io/badge/GitHub_Copilot-000000?style=for-the-badge&logo=githubcopilot&logoColor=white" alt="GitHub Copilot"></a>
+  <a href="https://opencode.ai"><img src="https://img.shields.io/badge/OpenCode-4285F4?style=for-the-badge&logoColor=white" alt="OpenCode"></a>
+  <a href="#cli--works-everywhere-no-server-needed"><img src="https://img.shields.io/badge/Any_Terminal-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white" alt="Any Terminal"></a>
+</p>
 
 > Built by a Rails developer with 10+ years of production experience. AI assisted — the same way it assists me shipping features at work. I designed the architecture, made every decision, reviewed every line, and wrote 1529 tests. This gem exists because I understand Rails deeply enough to know exactly what AI agents get wrong and what context they need to get it right.
 
@@ -76,33 +82,7 @@ Your AI agent right now:
 
 One call. Full picture.
 
-```
-rails 'ai:tool[search_code]' pattern="can_cook?" match_type=trace
-```
-
-```
-# Trace: can_cook?
-
-## Definition
-app/models/concerns/plan_limitable.rb:8
-  def can_cook?
-    p = effective_plan
-    return true if p.unlimited_cooks?
-    (cooks_this_month || 0) < p.cooks_per_month
-  end
-
-## Calls internally
-- unlimited_cooks?
-
-## Called from (8 sites)
-### app/controllers/cooks_controller.rb (Controller)
-  24: unless current_user.can_cook?
-### app/views/cooks/new.html.erb (View)
-  7: <% unless current_user.can_cook? %>
-### test/models/concerns/plan_limitable_test.rb (Test)
-  24: assert @user.can_cook?
-  29: assert_not @user.can_cook?
-```
+![Trace demo](demo-trace.gif)
 
 Definition + source code + every caller grouped by type + what it calls internally. **One call replaces 6 file reads.**
 
