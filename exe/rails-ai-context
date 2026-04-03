@@ -16,31 +16,25 @@ class RailsAiContextCLI < Thor
     def tool(name = nil, *args)
       if options[:list] || name.nil?
         boot_rails!
-        require "rails_ai_context"
-        puts RailsAiContext::CLI::ToolRunner.tool_list
+        puts ::RailsAiContext::CLI::ToolRunner.tool_list
         return
       end
 
       boot_rails!
-      require "rails_ai_context"
 
       if args.include?("--help") || args.include?("-h")
-        tool_class = RailsAiContext::CLI::ToolRunner.new(name, []).tool_class
-        puts RailsAiContext::CLI::ToolRunner.tool_help(tool_class)
+        tool_class = ::RailsAiContext::CLI::ToolRunner.new(name, []).tool_class
+        puts ::RailsAiContext::CLI::ToolRunner.tool_help(tool_class)
         return
       end
 
-      runner = RailsAiContext::CLI::ToolRunner.new(name, args, json_mode: options[:json])
+      runner = ::RailsAiContext::CLI::ToolRunner.new(name, args, json_mode: options[:json])
       puts runner.run
-    rescue RailsAiContext::CLI::ToolRunner::ToolNotFoundError => e
-      $stderr.puts "Error: #{e.message}"
-      exit 1
-    rescue RailsAiContext::CLI::ToolRunner::InvalidArgumentError => e
-      $stderr.puts "Error: #{e.message}"
-      exit 3
+    rescue SystemExit
+      raise # let exit() propagate (from boot_rails!)
     rescue => e
       $stderr.puts "Error: #{e.message}"
-      exit 2
+      exit 1
     end
 
     desc "serve", "Start MCP server (stdio transport)"
@@ -48,14 +42,18 @@ class RailsAiContextCLI < Thor
     option :port, type: :numeric, default: 6029, desc: "HTTP port (only for http transport)"
     def serve
       boot_rails!
-      require "rails_ai_context"
 
       transport = options[:transport].to_sym
       if transport == :http
-        RailsAiContext.configuration.http_port = options[:port]
+        ::RailsAiContext.configuration.http_port = options[:port]
       end
 
-      RailsAiContext.start_mcp_server(transport: transport)
+      ::RailsAiContext.start_mcp_server(transport: transport)
+    rescue SystemExit
+      raise
+    rescue => e
+      $stderr.puts "Error: #{e.message}"
+      exit 1
     end
 
     desc "context", "Generate AI context files"
@@ -67,47 +65,47 @@ class RailsAiContextCLI < Thor
 
       if options[:format]
         # Explicit --format flag overrides config
-        result = RailsAiContext.generate_context(format: options[:format].to_sym)
+        result = ::RailsAiContext.generate_context(format: options[:format].to_sym)
         print_context_result(result)
       else
         # Use ai_tools from config (.rails-ai-context.yml or initializer)
-        ai_tools = RailsAiContext.configuration.ai_tools
+        ai_tools = ::RailsAiContext.configuration.ai_tools
         if ai_tools.nil? || ai_tools.empty?
-          result = RailsAiContext.generate_context(format: :all)
+          result = ::RailsAiContext.generate_context(format: :all)
           print_context_result(result)
         else
           ai_tools.each do |fmt|
-            result = RailsAiContext.generate_context(format: fmt)
+            result = ::RailsAiContext.generate_context(format: fmt)
             print_context_result(result)
           end
         end
       end
+    rescue SystemExit
+      raise
+    rescue => e
+      $stderr.puts "Error: #{e.message}"
+      exit 1
     end
 
     desc "inspect", "Print introspection summary"
     def inspect_app
       boot_rails!
-      require "rails_ai_context"
       require "json"
 
-      context = RailsAiContext.introspect
+      context = ::RailsAiContext.introspect
       puts JSON.pretty_generate(context)
     end
 
     desc "watch", "Watch for changes and auto-regenerate context files"
     def watch
       boot_rails!
-      require "rails_ai_context"
-
-      RailsAiContext::Watcher.new.start
+      ::RailsAiContext::Watcher.new.start
     end
 
     desc "doctor", "Run diagnostic checks and report AI readiness score"
     def doctor
       boot_rails!
-      require "rails_ai_context"
-
-      result = RailsAiContext::Doctor.new.run
+      result = ::RailsAiContext::Doctor.new.run
       result[:checks].each do |check|
         icon = case check.status
         when :pass then "PASS"
@@ -155,7 +153,7 @@ class RailsAiContextCLI < Thor
       $stderr.puts ""
       $stderr.puts "Generating AI context files..."
       ai_tools.each do |fmt|
-        result = RailsAiContext.generate_context(format: fmt)
+        result = ::RailsAiContext.generate_context(format: fmt)
         (result[:written] || []).each { |f| $stderr.puts "  Written: #{f}" }
         (result[:skipped] || []).each { |f| $stderr.puts "  Skipped: #{f} (unchanged)" }
       end
