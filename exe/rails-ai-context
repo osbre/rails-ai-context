@@ -1,6 +1,15 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+# Standalone mode: the RubyGems exe wrapper activates our gem and all transitive
+# dependencies BEFORE this script runs. When inside a Rails app, Bundler.setup
+# may need different versions of those deps (e.g., bigdecimal 4.1.0 activated here
+# but Gemfile.lock wants 4.0.1). Clear non-default gem activations so Bundler can
+# resolve cleanly. The $LOAD_PATH entries remain (Bundler.setup replaces them anyway).
+if defined?(Gem) && Gem.respond_to?(:loaded_specs)
+  Gem.loaded_specs.delete_if { |_, spec| !spec.default_gem? }
+end
+
 require "thor"
 require "yaml"
 
@@ -381,20 +390,23 @@ class RailsAiContextCLI < Thor
         exit 1
       end
 
-      # Load gem + dependencies BEFORE Rails boot.
+      # Save $LOAD_PATH before Rails boot.
       # Bundler.setup (in config/boot.rb) strips $LOAD_PATH to Gemfile-only gems.
-      # In standalone mode (gem not in Gemfile), this would remove our gem and mcp.
-      # Loading first ensures Zeitwerk's autoload paths (absolute, not $LOAD_PATH-
-      # dependent) are configured, and we can restore stripped paths after boot.
-      require "mcp"
-      require "rails_ai_context"
+      # In standalone mode (gem not in Gemfile), this removes our gem and mcp paths.
+      # We restore them after boot so lazy requires (mcp, etc.) still resolve.
+      #
+      # We do NOT require mcp or rails_ai_context before boot — that would activate
+      # gem versions that conflict with Bundler's resolution (e.g., bigdecimal).
+      # Instead, paths are restored and gems load lazily using Bundler-resolved deps.
       pre_boot_paths = $LOAD_PATH.dup
 
       require config_path
 
-      # Restore dependency paths that Bundler.setup stripped (standalone mode).
+      # Restore paths that Bundler.setup stripped (standalone mode).
       # For Gemfile users, this is a no-op — no paths were removed.
       (pre_boot_paths - $LOAD_PATH).each { |p| $LOAD_PATH << p }
+
+      require "rails_ai_context"
 
       RailsAiContext::Configuration.auto_load!
     end
