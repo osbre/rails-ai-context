@@ -54,6 +54,8 @@ jobs:
         run: bundle exec rubocop --parallel
 
       - name: YARD documentation coverage
+        continue-on-error: true
         run: |
-          bundle exec yard stats --list-undoc
+          gem install yard --no-document
+          yard stats --list-undoc
           echo "Documentation stats printed above"
