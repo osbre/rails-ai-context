@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.0] — 2026-04-05
+
+### Added
+- **Anti-Hallucination Protocol** — 6-rule verification section embedded in every generated context file (CLAUDE.md, AGENTS.md, .claude/rules/, .cursor/rules/, .github/instructions/, copilot-instructions.md). Targets specific AI failure modes: statistical priors overriding observed facts, pattern completion beating verification, inheritance blindness, empty-output-as-permission, stale-context-lies. Rules force AI to verify column/association/route/method/gem names before writing, mark assumptions with `[ASSUMPTION]` prefix, check inheritance chains, and re-query after writes. Enabled by default via new `config.anti_hallucination_rules` option (boolean, default: `true`). Set `false` to skip.
+
+### Changed
+- **Repositioning: ground truth, not token savings** — the gem's mission is now explicit about what it actually does: stop AI from guessing your Rails app. Token savings are a side-effect, not the product. Updated README headline, "What stops being wrong" section (replaces "Measured token savings"), gemspec summary/description, server.json MCP registry description, docs/GUIDE.md intro, and the tools guide embedded in every generated CLAUDE.md/AGENTS.md/.cursor/rules. The core pitch: AI queries your running app for real schema, real associations, real filters — and writes correct code on the first try instead of iterating through corrections.
+
 ## [4.6.0] — 2026-04-04
 
 ### Added

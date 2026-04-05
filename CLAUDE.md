@@ -63,11 +63,12 @@ structure to AI assistants via the Model Context Protocol (MCP).
 35. **YAML config** — `.rails-ai-context.yml` as alternative to initializer. Supports all config options except `custom_tools` (Ruby classes) and `excluded_concerns` (regex). Precedence: initializer > YAML > defaults.
 36. **Config auto-loading** — `Configuration.auto_load!` checks `configured_via_block?` flag. If initializer ran, YAML is skipped. Corrupted YAML degrades gracefully with a warning.
 37. **Three install paths** — In-Gemfile (`rails generate rails_ai_context:install`), Standalone (`rails-ai-context init`), Zero config (just run `rails-ai-context serve` with defaults). Users can switch between paths freely; `.mcp.json` command is updated on re-init/re-install.
+38. **Anti-Hallucination Protocol** — 6-rule verification section embedded in every generated context file (CLAUDE.md, AGENTS.md, .claude/rules/, .cursor/rules/, .github/instructions/). Targets AI failure modes: statistical priors overriding facts, pattern completion beating verification, stale context. Toggleable via `config.anti_hallucination_rules` (default: true). Rendered by `tools_anti_hallucination_section` in `tool_guide_helper.rb`, placed between intro and detail_guidance in both full and compact render methods.
 
 ## Testing
 
 ```bash
-bundle exec rspec           # Run specs (1621 examples)
+bundle exec rspec           # Run specs (1627 examples)
 bundle exec rubocop         # Lint
 ```
 

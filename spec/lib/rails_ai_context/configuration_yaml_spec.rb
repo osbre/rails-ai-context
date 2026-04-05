@@ -61,7 +61,8 @@ RSpec.describe RailsAiContext::Configuration, "YAML loading" do
           "query_timeout" => 10,
           "log_lines" => 100,
           "auto_mount" => true,
-          "generate_root_files" => false
+          "generate_root_files" => false,
+          "anti_hallucination_rules" => false
         }))
 
         RailsAiContext::Configuration.load_from_yaml(yaml_path)
@@ -74,6 +75,7 @@ RSpec.describe RailsAiContext::Configuration, "YAML loading" do
         expect(config.log_lines).to eq(100)
         expect(config.auto_mount).to eq(true)
         expect(config.generate_root_files).to eq(false)
+        expect(config.anti_hallucination_rules).to eq(false)
       end
     end
 

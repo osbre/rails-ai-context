@@ -2,6 +2,12 @@
 
 > Full documentation for [rails-ai-context](https://github.com/crisnahine/rails-ai-context).
 > For a quick overview, see the [README](../README.md).
+>
+> **Why this gem exists:** AI coding assistants guess your Rails app. They invent columns,
+> use wrong association names, miss inherited filters, and scaffold tests that don't match
+> your patterns. This gem turns your running app into the source of truth — so agents query
+> real schema, real associations, and real conventions on demand, and write correct code
+> on the first try.
 
 ---
 
@@ -1290,6 +1296,7 @@ end
 | `server_name` | String | `"rails-ai-context"` | MCP server name |
 | `server_version` | String | gem version | MCP server version |
 | `generate_root_files` | Boolean | `true` | Generate root files (CLAUDE.md, etc.) — set `false` for split rules only |
+| `anti_hallucination_rules` | Boolean | `true` | Embed 6-rule Anti-Hallucination Protocol in generated context files — set `false` to skip |
 | `max_file_size` | Integer | `5_000_000` | Per-file read limit for tools (5MB) |
 | `max_test_file_size` | Integer | `1_000_000` | Test file read limit (1MB) |
 | `max_schema_file_size` | Integer | `10_000_000` | schema.rb / structure.sql parse limit (10MB) |

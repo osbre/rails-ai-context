@@ -16,6 +16,7 @@ RSpec.describe RailsAiContext::Configuration do
     expect(config.max_tool_response_chars).to eq(200_000)
     expect(config.live_reload).to eq(:auto)
     expect(config.live_reload_debounce).to eq(1.5)
+    expect(config.anti_hallucination_rules).to eq(true)
   end
 
   it "defaults to full preset" do

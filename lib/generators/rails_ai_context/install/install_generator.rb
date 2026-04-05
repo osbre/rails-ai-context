@@ -187,6 +187,11 @@ module RailsAiContext
             # Whether to generate root files (CLAUDE.md, AGENTS.md, etc.)
             # Set false to only generate split rules (.claude/rules/, .cursor/rules/, etc.)
             # config.generate_root_files = true
+
+            # Anti-Hallucination Protocol: 6-rule verification section embedded in every
+            # generated context file. Forces AI to verify facts before writing code.
+            # Default: true. Set false to skip the protocol entirely.
+            # config.anti_hallucination_rules = true
         SECTION
         "Models & Filtering" => <<~SECTION,
             # ── Models & Filtering ────────────────────────────────────────────

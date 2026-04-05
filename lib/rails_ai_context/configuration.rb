@@ -13,6 +13,7 @@ module RailsAiContext
     # All YAML-supported keys (explicit allowlist for safety)
     YAML_KEYS = %i[
       ai_tools tool_mode preset context_mode generate_root_files claude_max_lines
+      anti_hallucination_rules
       server_name cache_ttl max_tool_response_chars
       live_reload live_reload_debounce auto_mount http_path http_bind http_port
       output_dir skip_tools excluded_models excluded_controllers
@@ -133,6 +134,11 @@ module RailsAiContext
     # When false, only generates split rule files (.claude/rules/, .cursor/rules/, etc.)
     attr_accessor :generate_root_files
 
+    # Whether to embed the Anti-Hallucination Protocol section in generated context files.
+    # Default: true. Set false to skip the 6-rule verification protocol in CLAUDE.md,
+    # AGENTS.md, .claude/rules/, .cursor/rules/, .github/instructions/.
+    attr_accessor :anti_hallucination_rules
+
     # File size limits (bytes) — increase for larger projects
     attr_accessor :max_file_size          # Per-file read limit for tools (default: 2MB)
     attr_accessor :max_test_file_size     # Test file read limit (default: 500KB)
@@ -231,6 +237,7 @@ module RailsAiContext
       @live_reload              = :auto
       @live_reload_debounce     = 1.5
       @generate_root_files      = true
+      @anti_hallucination_rules = true
       @max_file_size            = 5_000_000
       @max_test_file_size       = 1_000_000
       @max_schema_file_size     = 10_000_000

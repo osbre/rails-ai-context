@@ -246,13 +246,13 @@ module RailsAiContext
         text_response("# #{path}\n\n```erb\n#{content}\n```")
       end
 
-      # Strip inline SVG blocks to save tokens — they're visual noise for code understanding.
+      # Strip inline SVG blocks — they're visual noise that buries the signal AI needs.
       # Replaces <svg ...>...</svg> with a compact placeholder.
       private_class_method def self.strip_svg(content)
         content.gsub(/<svg\b[^>]*>.*?<\/svg>/m, "<!-- svg icon -->")
       end
 
-      # Compress repeated long Tailwind class strings to save tokens.
+      # Compress repeated long Tailwind class strings so the meaningful markup stays readable.
       # Replaces duplicate class="..." with a CSS variable reference after first occurrence.
       private_class_method def self.compress_tailwind(content)
         class_counts = Hash.new(0)

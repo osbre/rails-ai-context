@@ -35,12 +35,12 @@ You've seen it. Your AI:
 - **Uses the wrong association name** — `user.posts` when it's `user.articles`
 - **Generates tests that don't match your patterns** — factories when you use fixtures, or the reverse
 - **Adds a gem you already have** — or calls an API from one you don't
-- **Reads 2,000 lines of schema.rb** to answer a question about one table
 - **Misses `before_action` filters from parent controllers** — then wonders why auth fails
+- **Invents a method** that isn't in your codebase — then you spend 10 minutes finding out
 
 You catch it. You fix it. You re-prompt. It breaks something else.
 
-**That loop is the actual cost of AI coding — not the tokens, the corrections.**
+**The real cost of AI coding isn't the tokens — it's the correction loop.** Every guess is a round-trip: you catch it, you fix it, you re-prompt, and something adjacent breaks. This gem kills the guessing at its source.
 
 <br>
 
@@ -82,37 +82,41 @@ One call returns: definition + source code + every caller grouped by type + test
 
 <br>
 
-## Measured token savings
+## What stops being wrong
 
-Real numbers from a production Rails app:
+Real scenarios where AI goes sideways — and what it does instead with ground truth:
 
-| Task | Without | With | Saved |
-|:-----|--------:|-----:|------:|
-| Get one table's columns | 1,492 tokens | 335 tokens | **77%** |
-| Trace a method across codebase | 10,556 tokens | 256 tokens | **97%** |
-| Understand a model | 1,754 tokens | 588 tokens | **66%** |
-| Map Stimulus controllers | 9,886 tokens | 620 tokens | **94%** |
-| Routes for one controller | 373 tokens | 121 tokens | **68%** |
+| You ask AI to... | Without — AI guesses | With — AI verifies first |
+|:-----|:-----|:-----|
+| Add a `subscription_tier` column to users | Writes the migration, duplicates an existing column | Reads live schema, spots `subscription_status` already exists, asks before migrating |
+| Call `user.posts` in a controller | Uses the guess; runtime `NoMethodError` | Resolves the actual association (`user.articles`) from the model |
+| Write tests for a new model | Scaffolds with FactoryBot | Detects your fixture-based suite and matches it |
+| Fix a failing create action | Misses inherited `before_action :authenticate_user!` | Returns parent-controller filters inline with the action source |
+| Build a dashboard page | Invents Tailwind classes from memory | Returns your actual button/card/alert patterns, copy-paste ready |
+| Trace where `can_cook?` is used | Reads 6 files sequentially, still misses callers | Single call: definition + source + every caller + tests |
 
 <details>
-<summary><strong>How to reproduce these numbers yourself</strong></summary>
+<summary><strong>Verify it on your own app</strong></summary>
 
 <br>
 
+Run these before and after installing to see what changes in *your* codebase:
+
 ```bash
-# Schema: full file vs one table
-wc -c db/schema.rb
-rails 'ai:tool[schema]' table=users | wc -c
+# Schema: does AI know what columns exist?
+rails 'ai:tool[schema]' table=users
 
-# Trace: all files AI reads vs one call
-rails 'ai:tool[search_code]' pattern=your_method match_type=trace | wc -c
+# Trace: find every caller of a method across the codebase
+rails 'ai:tool[search_code]' pattern=your_method match_type=trace
 
-# Model: raw file + schema vs structured output
-wc -c app/models/user.rb db/schema.rb
-rails 'ai:tool[model_details]' model=User | wc -c
+# Model: associations, scopes, callbacks, concerns — all resolved
+rails 'ai:tool[model_details]' model=User
+
+# Controllers: action source + inherited filters + strong params in one shot
+rails 'ai:tool[controllers]' controller=UsersController action=create
 ```
 
-Divide bytes by 4 for rough token count. Bigger apps save more — tool output stays focused while raw files grow.
+Compare what AI outputs with and without these tools wired in. The difference is measured in *corrections avoided*, not bytes saved.
 
 </details>
 
@@ -230,7 +234,7 @@ rails 'ai:tool[stimulus]' controller=chart
 
 ## 39 Tools
 
-Every tool is **read-only** and returns structured, token-efficient context.
+Every tool is **read-only** and returns data verified against your actual app — not guesses, not training data.
 
 <details>
 <summary><strong>Search & Trace</strong></summary>
@@ -339,6 +343,28 @@ Every tool is **read-only** and returns structured, token-efficient context.
 
 <br>
 
+## Anti-Hallucination Protocol
+
+Every generated context file ships with **6 rules that force AI verification** before writing code. The protocol targets the exact cognitive failures that produce confident-wrong code: statistical priors overriding observed facts, pattern completion beating verification, stale context lies.
+
+<details>
+<summary><strong>The 6 rules (shown to AI in every CLAUDE.md / .cursor/rules / .github/instructions)</strong></summary>
+
+<br>
+
+1. **Verify before you write.** Never reference a column, association, route, helper, method, class, partial, or gem not verified in THIS project via a tool call in THIS turn. Never invent names that "sound right."
+2. **Mark every assumption.** If proceeding without verification, prefix with `[ASSUMPTION]`. Silent assumptions forbidden. "I'd need to check X first" is a preferred answer.
+3. **Training data describes average Rails. This app isn't average.** When something feels "obviously" standard Rails, query anyway. Check `rails_get_conventions` + `rails_get_gems` BEFORE scaffolding.
+4. **Check the inheritance chain before every edit.** Inherited `before_action` filters, concerns, includes, STI parents. Inheritance is never flat.
+5. **Empty tool output is information, not permission.** "0 callers found" signals investigation, not license to proceed on guesses.
+6. **Stale context lies. Re-query after writes.** Earlier tool output may be wrong after edits.
+
+Enabled by default. Disable with `config.anti_hallucination_rules = false` if you prefer your own rules.
+
+</details>
+
+<br>
+
 ## How it works
 
 ```
@@ -419,6 +445,7 @@ end
 | `preset` | `:full` | `:full` (33 introspectors) or `:standard` (19) |
 | `context_mode` | `:compact` | `:compact` (150 lines) or `:full` |
 | `generate_root_files` | `true` | Set `false` for split rules only |
+| `anti_hallucination_rules` | `true` | Embed 6-rule verification protocol in generated context files |
 | `cache_ttl` | `60` | Cache TTL in seconds |
 | `max_tool_response_chars` | `200_000` | Safety cap for tool responses |
 | `live_reload` | `:auto` | `:auto`, `true`, or `false` |

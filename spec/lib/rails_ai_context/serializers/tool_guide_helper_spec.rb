@@ -99,6 +99,28 @@ RSpec.describe RailsAiContext::Serializers::ToolGuideHelper do
     end
   end
 
+  describe "#tools_anti_hallucination_section" do
+    it "renders the 6-rule protocol when enabled (default)" do
+      lines = helper.tools_anti_hallucination_section
+      text = lines.join("\n")
+      expect(text).to include("Anti-Hallucination Protocol")
+      expect(text).to include("Verify before you write")
+      expect(text).to include("Mark every assumption")
+      expect(text).to include("Training data describes average Rails")
+      expect(text).to include("Check the inheritance chain")
+      expect(text).to include("Empty tool output is information")
+      expect(text).to include("Stale context lies")
+    end
+
+    it "returns empty array when anti_hallucination_rules is false" do
+      original = RailsAiContext.configuration.anti_hallucination_rules
+      RailsAiContext.configuration.anti_hallucination_rules = false
+      expect(helper.tools_anti_hallucination_section).to eq([])
+    ensure
+      RailsAiContext.configuration.anti_hallucination_rules = original
+    end
+  end
+
   describe "#render_tools_guide" do
     it "assembles a complete guide with header, intro, table" do
       lines = helper.render_tools_guide
@@ -107,6 +129,20 @@ RSpec.describe RailsAiContext::Serializers::ToolGuideHelper do
       expect(text).to include("START HERE")
       expect(text).to include("Common mistakes")
       expect(text).to include("All 39 Tools")
+    end
+
+    it "includes the anti-hallucination protocol by default" do
+      text = helper.render_tools_guide.join("\n")
+      expect(text).to include("Anti-Hallucination Protocol")
+    end
+
+    it "omits the protocol when anti_hallucination_rules is false" do
+      original = RailsAiContext.configuration.anti_hallucination_rules
+      RailsAiContext.configuration.anti_hallucination_rules = false
+      text = helper.render_tools_guide.join("\n")
+      expect(text).not_to include("Anti-Hallucination Protocol")
+    ensure
+      RailsAiContext.configuration.anti_hallucination_rules = original
     end
   end
 
@@ -120,6 +156,20 @@ RSpec.describe RailsAiContext::Serializers::ToolGuideHelper do
       # Compact uses name list, not the full table
       expect(text).not_to include("| MCP |")
       expect(text).not_to include("| CLI |")
+    end
+
+    it "includes the anti-hallucination protocol by default" do
+      text = helper.render_tools_guide_compact.join("\n")
+      expect(text).to include("Anti-Hallucination Protocol")
+    end
+
+    it "omits the protocol when anti_hallucination_rules is false" do
+      original = RailsAiContext.configuration.anti_hallucination_rules
+      RailsAiContext.configuration.anti_hallucination_rules = false
+      text = helper.render_tools_guide_compact.join("\n")
+      expect(text).not_to include("Anti-Hallucination Protocol")
+    ensure
+      RailsAiContext.configuration.anti_hallucination_rules = original
     end
   end
 
