@@ -118,7 +118,7 @@ module RailsAiContext
         sql
           .gsub(/\/\*.*?\*\//m, " ")   # Block comments: /* ... */
           .gsub(/--[^\n]*/, " ")        # Line comments: -- ...
-          .gsub(/#[^\n]*/, " ")         # MySQL-style comments: # ...
+          .gsub(/^\s*#[^\n]*/m, " ")   # MySQL-style comments: # at line start only
           .squeeze(" ").strip
       end
 
@@ -313,13 +313,13 @@ module RailsAiContext
 
         # PostgreSQL JSON format returns plan as JSON
         begin
-          plan_data = JSON.parse(raw) rescue nil
+          plan_data = JSON.parse(raw)
           if plan_data.is_a?(Array) && plan_data.first.is_a?(Hash)
             plan = plan_data.first["Plan"]
             extract_pg_nodes(plan, scans, warnings) if plan
           end
-        rescue
-          # Fall through to raw output
+        rescue JSON::ParserError
+          # Non-JSON EXPLAIN format — fall through to raw output
         end
 
         { scan_types: scans, warnings: warnings, raw: raw }
@@ -405,7 +405,7 @@ module RailsAiContext
         redacted_cols = config.query_redacted_columns.map(&:downcase).to_set
 
         # Auto-redact columns declared with `encrypts` in models
-        models_data = (SHARED_CACHE[:context] || cached_context)&.dig(:models)
+        models_data = cached_context&.dig(:models)
         if models_data.is_a?(Hash)
           models_data.each_value do |data|
             next unless data.is_a?(Hash)

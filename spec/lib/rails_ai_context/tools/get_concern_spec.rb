@@ -202,6 +202,33 @@ RSpec.describe RailsAiContext::Tools::GetConcern do
       end
     end
 
+    context "class_methods block closing" do
+      before do
+        File.write(File.join(model_concerns_dir, "mixed_methods.rb"), <<~RUBY)
+          module MixedMethods
+            extend ActiveSupport::Concern
+
+            class_methods do
+              def inside_block
+                # class method inside block
+              end
+            end
+
+            def self.after_block
+              # class method after block
+            end
+          end
+        RUBY
+      end
+
+      it "captures def self. methods defined after class_methods block" do
+        result = described_class.call(name: "MixedMethods", detail: "standard")
+        text = result.content.first[:text]
+        expect(text).to include("inside_block")
+        expect(text).to include("after_block")
+      end
+    end
+
     context "callbacks in concerns" do
       before do
         File.write(File.join(model_concerns_dir, "trackable.rb"), <<~RUBY)

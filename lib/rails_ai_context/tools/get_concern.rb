@@ -307,19 +307,26 @@ module RailsAiContext
         in_class_methods = false
         in_private = false
 
+        class_methods_indent = 0
+
         source.each_line do |line|
           if line.match?(/\A\s*class_methods\s+do/)
             in_class_methods = true
             in_private = false
+            class_methods_indent = line[/\A\s*/].length
             next
           end
 
           if in_class_methods
             in_private = true if line.match?(/\A\s*(private|protected)\s*$/)
 
-            if line.match?(/\A\s*end\s*$/) && !in_private
-              # Could be end of class_methods block — track via indent
-              # Simplified: we'll just collect until we see a top-level end
+            if line.match?(/\A\s*end\s*$/)
+              current_indent = line[/\A\s*/].length
+              if current_indent <= class_methods_indent
+                in_class_methods = false
+                in_private = false
+                next
+              end
             end
 
             if !in_private && (match = line.match(/\A\s*def\s+([\w?!]+(?:\([^)]*\))?)/))

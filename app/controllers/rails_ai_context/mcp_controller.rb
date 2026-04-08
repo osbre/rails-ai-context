@@ -18,7 +18,7 @@ module RailsAiContext
       # Class-level memoization — transport persists across requests.
       # Thread-safe: MCP::Server and transport are stateless for reads.
       def mcp_transport
-        @mcp_transport || @transport_mutex.synchronize do
+        @transport_mutex.synchronize do
           @mcp_transport ||= begin
             server = RailsAiContext::Server.new(Rails.application, transport: :http).build
             MCP::Server::Transports::StreamableHTTPTransport.new(server)

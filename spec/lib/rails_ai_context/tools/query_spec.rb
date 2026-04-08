@@ -436,8 +436,28 @@ RSpec.describe RailsAiContext::Tools::Query do
       expect(described_class.strip_sql_comments(sql)).to eq("SELECT 1")
     end
 
-    it "strips MySQL-style hash comments" do
-      expect(described_class.strip_sql_comments("SELECT 1 # evil comment")).to eq("SELECT 1")
+    it "strips MySQL-style hash comments at line start" do
+      expect(described_class.strip_sql_comments("# full line comment\nSELECT 1")).to eq("SELECT 1")
+    end
+
+    it "preserves hash characters inside SQL strings" do
+      sql = "SELECT '#'; DROP TABLE users"
+      result = described_class.strip_sql_comments(sql)
+      expect(result).to include("DROP TABLE")
+    end
+
+    it "preserves PostgreSQL JSONB operators" do
+      sql = "SELECT data #>> '{key}' FROM records"
+      result = described_class.strip_sql_comments(sql)
+      expect(result).to include("#>>")
+    end
+  end
+
+  describe "SQL validation with hash in string literals" do
+    it "blocks destructive SQL hidden after hash in string literal" do
+      valid, error = described_class.validate_sql("SELECT '#'; DROP TABLE users")
+      expect(valid).to be false
+      expect(error).to include("Blocked")
     end
   end
 
