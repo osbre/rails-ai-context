@@ -203,7 +203,7 @@ module RailsAiContext
             relative = path.sub("#{root}/", "")
             source = RailsAiContext::SafeFile.read(path) or next
             line_count = source.lines.size
-            methods = source.scan(/\A\s*def (?:self\.)?(\w+)/m).flatten.reject { |m| m == "initialize" }
+            methods = source.scan(/^\s*def (?:self\.)?(\w+)/m).flatten.reject { |m| m == "initialize" }
             lines << "- `#{relative}` (#{line_count} lines)"
             lines << "  Methods: #{methods.first(20).join(', ')}" if methods.any?
           end
@@ -504,7 +504,7 @@ module RailsAiContext
           found.each do |path|
             relative = path.sub("#{root}/", "")
             source = RailsAiContext::SafeFile.read(path) or next
-            methods = source.scan(/\A\s*def (\w+)/m).flatten.reject { |m| m == "initialize" }
+            methods = source.scan(/^\s*def (\w+)/m).flatten.reject { |m| m == "initialize" }
             lines << "- `#{relative}` — #{methods.join(', ')}" if methods.any?
           end
           lines << ""

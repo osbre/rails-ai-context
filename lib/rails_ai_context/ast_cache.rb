@@ -65,8 +65,8 @@ module RailsAiContext
       STORE.size
     end
 
-    # Evict ~25% of entries when cache exceeds MAX_SIZE.
-    # Synchronized to prevent multiple threads from over-evicting simultaneously.
+    # Evict ~25% of entries (arbitrary selection — Concurrent::Map has no ordering guarantee)
+    # when cache exceeds MAX_SIZE. Synchronized to prevent multiple threads from over-evicting.
     def self.evict_if_full
       EVICTION_MUTEX.synchronize do
         return if STORE.size < MAX_SIZE

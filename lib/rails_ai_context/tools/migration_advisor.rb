@@ -48,7 +48,7 @@ module RailsAiContext
       def self.call(action: nil, table: nil, column: nil, type: nil, new_name: nil, options: nil, server_context: nil)
         action = action.to_s.strip
         table = table.to_s.strip
-        column = column.to_s.strip if column
+        column = column.to_s.strip.presence if column
 
         # Normalize model names to table names: "Cook" → "cooks", "BrandProfile" → "brand_profiles"
         table = table.underscore.pluralize if table.match?(/\A[A-Z]/)

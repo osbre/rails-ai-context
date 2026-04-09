@@ -270,7 +270,7 @@ module RailsAiContext
 
         source.each_line do |line|
           # Track class_methods block
-          if line.match?(/\A\s*(class_methods\s+do|def\s+self\.\w)/)
+          if line.match?(/\A\s*class_methods\s+do/)
             in_class_methods = true
             class_methods_depth = line[/\A\s*/].length
           end

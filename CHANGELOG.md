@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.7.0] — 2026-04-09
+
+### Quickstart — Two commands. Problem gone.
+
+```bash
+gem "rails-ai-context", group: :development
+rails generate rails_ai_context:install
+```
+
+### Fixed — Bug Fixes from Codebase Audit
+
+6 bug fixes discovered via automated codebase audit (bug-finder, code-reviewer, doc-consistency-checker agents).
+
+- **AnalyzeFeature service/mailer method extraction** (HIGH) — `\A` (start-of-string) anchor in `scan` regex replaced with `^` (start-of-line). Services and mailers now correctly list all methods instead of always returning empty arrays.
+
+- **SearchCode exact_match + definition double-escaping** (HIGH) — Word boundaries (`\b`) were applied before `Regexp.escape`, producing unmatchable regex when combining `exact_match: true` with `match_type: "definition"` or `"class"`. Boundaries now applied per-match_type after escaping.
+
+- **MigrationAdvisor empty string column bypass** (MEDIUM) — Empty string `""` column names bypassed the "column required" validation (Ruby truthiness). Now normalized via `.presence` so empty strings become `nil` and are caught.
+
+- **GetConcern class method block tracking** — Regex no longer matches `def self.method` as a `class_methods do` block entry, preventing instance methods after `def self.` from being incorrectly skipped.
+
+- **AstCache eviction comment accuracy** — Comment corrected from "evicts oldest entries" to "arbitrary selection" since `Concurrent::Map` has no ordering guarantee.
+
+- **SECURITY.md supported versions** — Added missing 5.6.x row to supported versions table.
+
+- **CONFIGURATION.md preset count** — Fixed stale `:standard` preset count from 13 to 17.
+
 ## [5.6.0] — 2026-04-09
 
 ### Added — Auto-Registration, TestHelper & Bug Fixes

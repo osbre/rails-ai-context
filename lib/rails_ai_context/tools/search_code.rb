@@ -78,27 +78,26 @@ module RailsAiContext
           return trace_method(pattern.strip, root, path, exclude_tests)
         end
 
-        # Apply exact_match word boundaries
-        pattern = "\\b#{pattern}\\b" if exact_match
-
         # Validate match_type
         valid_match_types = %w[any definition class call trace]
         unless valid_match_types.include?(match_type)
           return text_response("Unknown match_type: '#{match_type}'. Valid values: #{valid_match_types.join(', ')}")
         end
 
-        # Apply match_type filter to pattern
+        # Apply match_type filter to pattern (exact_match word boundaries applied per-type)
         search_pattern = case match_type
         when "definition"
           cleaned = pattern.sub(/\A\s*def\s+/, "")
-          "^\\s*def\\s+(self\\.)?#{Regexp.escape(cleaned)}"
+          escaped = Regexp.escape(cleaned)
+          exact_match ? "^\\s*def\\s+(self\\.)?#{escaped}\\b" : "^\\s*def\\s+(self\\.)?#{escaped}"
         when "class"
           cleaned = pattern.sub(/\A\s*(class|module)\s+/, "")
-          "^\\s*(class|module)\\s+\\w*#{Regexp.escape(cleaned)}"
+          escaped = Regexp.escape(cleaned)
+          exact_match ? "^\\s*(class|module)\\s+\\w*#{escaped}\\b" : "^\\s*(class|module)\\s+\\w*#{escaped}"
         when "call"
-          pattern
+          exact_match ? "\\b#{pattern}\\b" : pattern
         else
-          pattern
+          exact_match ? "\\b#{pattern}\\b" : pattern
         end
 
         # Validate regex syntax early
