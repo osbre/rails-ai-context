@@ -206,6 +206,6 @@ The **Fingerprinter** computes a composite SHA256 from all watched directories (
 
 **[← Architecture](ARCHITECTURE.md)** · **[Security →](SECURITY.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

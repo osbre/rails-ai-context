@@ -11,7 +11,7 @@
 ---
 
 > [!NOTE]
-> This is the comprehensive single-file reference. For focused guides, see the docs below. For a quick overview, see the [README](../README.md).
+> This is the comprehensive single-file reference. For focused guides, see the docs below. For a quick overview, see the [Home](index.md).
 
 ## Focused guides
 

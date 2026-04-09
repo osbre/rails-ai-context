@@ -385,6 +385,6 @@ Your custom rules (coding style, PR conventions, team preferences) stay. The gem
 
 **[← Tools Reference](TOOLS.md)** · **[Custom Tools →](CUSTOM_TOOLS.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

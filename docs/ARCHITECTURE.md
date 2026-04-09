@@ -239,6 +239,6 @@ SHA256-based change detection:
 
 **[← AI Tool Setup](SETUP.md)** · **[Introspectors →](INTROSPECTORS.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

@@ -113,6 +113,6 @@ rails 'ai:tool[conventions]'
 
 **Next:** [Tools Reference →](TOOLS.md)
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

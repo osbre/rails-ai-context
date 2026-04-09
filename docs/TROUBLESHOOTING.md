@@ -280,6 +280,6 @@ config.live_reload = false
 
 **[← Standalone](STANDALONE.md)** · **[FAQ →](FAQ.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

@@ -209,6 +209,6 @@ end
 
 **[← Recipes](RECIPES.md)** · **[Configuration →](CONFIGURATION.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

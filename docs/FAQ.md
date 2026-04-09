@@ -235,6 +235,6 @@ config.generate_root_files = false
 
 **[← Troubleshooting](TROUBLESHOOTING.md)** · **[Full Guide →](GUIDE.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

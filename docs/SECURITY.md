@@ -233,6 +233,6 @@ Supported versions: 4.0.x and later (4.2.1+ includes security hardening). See th
 
 **[← Introspectors](INTROSPECTORS.md)** · **[CLI Reference →](CLI.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

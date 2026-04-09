@@ -490,6 +490,6 @@ Plus 9 static resources (schema, routes, conventions, gems, controllers, config,
 
 **[← Quickstart](QUICKSTART.md)** · **[Recipes →](RECIPES.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

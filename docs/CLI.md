@@ -229,6 +229,6 @@ rails ai:context
 
 **[← Security](SECURITY.md)** · **[Standalone Mode →](STANDALONE.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

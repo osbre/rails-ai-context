@@ -230,6 +230,6 @@ end
 
 **[← Custom Tools](CUSTOM_TOOLS.md)** · **[AI Tool Setup →](SETUP.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

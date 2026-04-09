@@ -164,6 +164,6 @@ The `serve` command waits for stdio input by design. Use `doctor` or `tool --lis
 
 **[← CLI Reference](CLI.md)** · **[Troubleshooting →](TROUBLESHOOTING.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>

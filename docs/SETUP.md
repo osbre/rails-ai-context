@@ -354,6 +354,6 @@ rails ai:watch
 
 **[← Configuration](CONFIGURATION.md)** · **[Architecture →](ARCHITECTURE.md)**
 
-[Back to README](../README.md)
+[Back to Home](index.md)
 
 </div>
