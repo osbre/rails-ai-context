@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.6.0] — 2026-04-09
+
+### Added — Auto-Registration, TestHelper & Bug Fixes
+
+Developer experience improvements inspired by action_mcp patterns, plus 5 security/correctness bug fixes.
+
+- **Auto-registration via `inherited` hook** — Tools are now auto-discovered from `BaseTool` subclasses. No manual list to maintain — drop a file in `tools/` and it's registered. `Server.builtin_tools` is the new public API. Thread-safe via `@registry_mutex` with deadlock-free design (const_get runs outside mutex to avoid recursive locking from inherited). `Server::TOOLS` preserved as deprecated `const_missing` shim for backwards compatibility.
+
+- **`abstract!` pattern** — `BaseTool.abstract!` excludes a class from the registry. `BaseTool` itself is abstract. Subclasses are concrete by default.
+
+- **TestHelper module** (`lib/rails_ai_context/test_helper.rb`) — Reusable test helper for custom_tools users. Methods: `execute_tool` (by name, short name, or class), `execute_tool_with_error`, `assert_tool_findable`, `assert_tool_response_includes`, `assert_tool_response_excludes`, `extract_response_text`. Works with both RSpec and Minitest. Supports fuzzy name resolution (`schema` → `rails_get_schema`).
+
+### Fixed
+
+- **SQL comment stripping validation bypass** (HIGH) — `#` comment stripping now restricted to line-start only, preventing validation bypass via hash characters in string literals. PostgreSQL JSONB operators (`#>>`) preserved.
+
+- **SHARED_CACHE read outside mutex** (MEDIUM) — `redact_results` now uses `cached_context` for thread-safe access to encrypted column data.
+
+- **McpController double-checked locking** (MEDIUM) — Removed unsynchronized read outside mutex, fixing unsafe pattern on non-GVL Rubies (JRuby/TruffleRuby).
+
+- **PG EXPLAIN parser bare rescue** (LOW) — Changed from `rescue` to `rescue JSON::ParserError`, preventing silent swallowing of bugs in `extract_pg_nodes`.
+
+- **GetConcern `class_methods` block closing** (LOW) — Indent-based tracking to detect the closing `end`, so `def self.` methods after the block are no longer lost.
+
+- **Query spec graceful degradation** — Replaced permanently-pending spec (sqlite3 2.x removed `set_progress_handler`) with a spec that verifies queries execute correctly without it.
+
 ## [5.5.0] — 2026-04-08
 
 ### Added — Universal MCP Auto-Discovery & Per-Tool Context Optimization (#51-#56)
