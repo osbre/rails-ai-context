@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.7.2] — 2026-04-14
+
+### Fixed — MCP Tool Responses Rejected by Strict Clients (#69)
+
+- **Removed default `output_schema` from all 38 tools.** Since v5.4.0, `BaseTool.inherited` automatically assigned a `DEFAULT_OUTPUT_SCHEMA` to every tool. The schema described the response wire envelope (`{content: [...]}`) rather than app-level structured data, and tools never returned matching `structured_content`. Per MCP spec, when a tool declares `outputSchema`, it MUST return `structuredContent` matching it. Strict MCP clients (e.g. Copilot CLI) reject responses that don't, with `MCP error -32600: Tool ... has an output schema but did not return structured content`. Lenient clients (Claude Code, Cursor) silently ignored the missing field, which is why the bug went unnoticed since v5.4.0.
+- **Why this happened.** The MCP Ruby SDK does not enforce `output_schema` server-side (no `validate_result` call in `MCP::Server`), so the test suite passed end-to-end. Validation happens client-side, and only strict clients caught it. Reported by @pardeyke.
+- **What changed.** Deleted `DEFAULT_OUTPUT_SCHEMA` constant and the `inherited` hook line that set it (`lib/rails_ai_context/tools/base_tool.rb`). Tools now ship with no `outputSchema` by default — matching what they actually return (text-only). Individual tools can still declare their own `output_schema` via the MCP::Tool DSL, provided they also return matching `structured_content`.
+- **Regression spec added.** `spec/lib/rails_ai_context/tools_spec.rb` now asserts (a) no tool advertises a default `outputSchema`, and (b) any tool that *does* declare one must also have `structured_content:` in its source — preventing the v5.4.0 misuse from sneaking back in.
+- **Future enhancement.** Per-tool structured output (returning parseable JSON alongside the Markdown text via `structured_content:`) is a future feature for tools where it adds value (`get_schema`, `get_routes`, etc.). Out of scope for this patch.
 
 ### Added — Framework Association Noise Filter
 

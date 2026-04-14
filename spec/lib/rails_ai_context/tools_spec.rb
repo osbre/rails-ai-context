@@ -21,15 +21,43 @@ RSpec.describe "MCP Tool Integration" do
           expect(annotations.destructive_hint).to eq(false)
         end
 
-        it "has an output_schema defined" do
+        it "does not declare a default output_schema (issue #69)" do
+          # Declaring an outputSchema without returning structured_content violates
+          # the MCP spec — strict clients (e.g. Copilot CLI) reject the response
+          # with "MCP error -32600: Tool ... has an output schema but did not
+          # return structured content". Tools that return only text MUST NOT
+          # advertise an outputSchema. See issue #69.
           schema = tool_class.instance_variable_get(:@output_schema_value)
-          expect(schema).not_to be_nil
-          expect(schema).to be_a(MCP::Tool::OutputSchema)
+          expect(schema).to be_nil
 
           h = tool_class.to_h
-          expect(h).to have_key(:outputSchema)
+          expect(h).not_to have_key(:outputSchema)
         end
       end
+    end
+
+    # Stronger contract regression: if a future tool legitimately declares an
+    # output_schema, its source MUST also return structured_content. Catches
+    # the v5.4.0 mistake (issue #69) from sneaking back in.
+    it "any tool declaring output_schema must also return structured_content" do
+      offenders = RailsAiContext::Server.builtin_tools.filter_map do |tool_class|
+        schema = tool_class.instance_variable_get(:@output_schema_value)
+        next if schema.nil?
+
+        source_file = tool_class.method(:call).source_location&.first
+        next unless source_file && File.exist?(source_file)
+
+        source = File.read(source_file)
+        next if source.include?("structured_content:")
+
+        tool_class.tool_name
+      end
+
+      expect(offenders).to be_empty,
+        "These tools declare output_schema but never pass structured_content: " \
+        "in their source. Per MCP spec, when outputSchema is set, the response " \
+        "MUST include matching structured_content. See issue #69. Offenders: " \
+        "#{offenders.join(', ')}"
     end
   end
 
