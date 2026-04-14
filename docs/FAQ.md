@@ -81,7 +81,7 @@ config.skip_tools = %w[rails_security_scan rails_query]
 
 ### What's the `detail` parameter?
 
-Most tools accept `detail`: `summary` (compact), `standard` (default), `full` (everything). Start with summary and drill down as needed. This keeps AI context windows lean.
+Individual lookup tools accept `detail`: `summary` (compact), `standard` (default), `full` (everything). Start with summary and drill down as needed. This keeps AI context windows lean. Composite tools (`rails_get_context`, `rails_analyze_feature`) do not accept `detail` — they always return their full bundled output.
 
 ### What are `[VERIFIED]` and `[INFERRED]` tags?
 

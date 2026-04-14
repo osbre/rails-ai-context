@@ -43,7 +43,7 @@ Tool name resolution is flexible — all of these work:
 | `get_schema` | `rails_get_schema` |
 | `rails_get_schema` | `rails_get_schema` |
 
-Most tools accept a **`detail`** parameter: `summary` (compact), `standard` (default), or `full` (everything). Start with summary, drill down as needed.
+Individual lookup tools accept a **`detail`** parameter: `summary` (compact), `standard` (default), or `full` (everything). Start with summary, drill down as needed. Composite tools (`rails_get_context`, `rails_analyze_feature`) do not accept `detail`.
 
 <p align="right"><a href="#table-of-contents">↑ back to top</a></p>
 
